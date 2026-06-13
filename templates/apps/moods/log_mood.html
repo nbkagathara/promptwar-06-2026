@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}Log Daily Mood - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="max-w-2xl mx-auto animated-fade">
+    <div class="mb-4">
+        <h2 class="h3 mb-1 fw-bold">Log Your Mood</h2>
+        <p class="text-secondary">Track how you feel today to help us customize your mindfulness exercises.</p>
+    </div>
+
+    <div class="glass-card">
+        <form method="post" action="{% url 'log_mood' %}">
+            {% csrf_token %}
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group-custom">
+                        <label for="id_mood_score" class="fw-semibold">Mood Score</label>
+                        {{ form.mood_score }}
+                        <div class="form-text text-muted small mt-1">1: Very Low, 5: Excellent</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group-custom">
+                        <label for="id_stress_score" class="fw-semibold">Stress Level</label>
+                        {{ form.stress_score }}
+                        <div class="form-text text-muted small mt-1">1: Calm/No Stress, 5: Extreme Stress</div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label for="id_energy_level" class="fw-semibold">Energy Level</label>
+                        {{ form.energy_level }}
+                        <div class="form-text text-muted small mt-1">1: Very Low, 5: Very High</div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label for="id_sleep_quality" class="fw-semibold">Sleep Quality</label>
+                        {{ form.sleep_quality }}
+                        <div class="form-text text-muted small mt-1">1: Terrible, 5: Excellent</div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label for="id_study_satisfaction" class="fw-semibold">Study Satisfaction</label>
+                        {{ form.study_satisfaction }}
+                        <div class="form-text text-muted small mt-1">1: Unsatisfied, 5: Highly Satisfied</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn-primary-custom px-4 py-2">Log Parameters</button>
+                <a href="{% url 'dashboard' %}" class="btn-secondary-custom px-4 py-2 text-decoration-none">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

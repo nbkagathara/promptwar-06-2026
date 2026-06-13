@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}Write Journal - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="max-w-3xl mx-auto animated-fade">
+    <div class="mb-4">
+        <h2 class="h3 mb-1 fw-bold">Reflect on Your Day</h2>
+        <p class="text-secondary">Pour out your concerns, pressures, achievements, or daily studies. Your entries are analyzed for emotional trends and burnout signs.</p>
+    </div>
+
+    <!-- Safety Engine Policy Notice -->
+    <div class="alert alert-info py-3 px-4 border-0 mb-4" style="border-radius: 16px; background: rgba(99, 102, 241, 0.08);">
+        <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-shield-check text-primary fs-3"></i>
+            <p class="text-secondary small mb-0">
+                <strong>Wellness Safety Guarantee:</strong> AuraWell uses real-time local keyword scanning. In case of extreme stress detection, the AI stops to display immediate clinical helper helplines. No judgment, only safe spaces.
+            </p>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <form method="post" action="{% url 'write_journal' %}">
+            {% csrf_token %}
+            <div class="form-group-custom mb-4">
+                <label for="id_content" class="fw-bold mb-2">Write freely. Try to cover how you felt during revision classes, exams, or resting periods.</label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                    <div class="text-danger small mt-1">{{ form.content.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn-primary-custom px-4 py-3">Submit for AI Analysis</button>
+                <a href="{% url 'dashboard' %}" class="btn-secondary-custom px-4 py-3 text-decoration-none">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

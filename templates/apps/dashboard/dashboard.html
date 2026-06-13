@@ -1,0 +1,250 @@
+{% extends "layout.html" %}
+
+{% block title %}Student Wellness Dashboard - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="animated-fade">
+    
+    <!-- Welcoming Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="h2 mb-1 fw-bold">Hello, {{ request.user.username }}!</h1>
+            <p class="text-secondary mb-0">
+                {% if profile.exam_type %}
+                    Preparing for <span class="badge-custom badge-medium fw-bold">{{ profile.exam_type.name }}</span>
+                {% else %}
+                    Set your target exam in settings to customize AI suggestions.
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'log_mood' %}" class="btn-secondary-custom px-4 py-2 text-decoration-none small">
+                <i class="bi bi-emoji-smile"></i> Log Mood
+            </a>
+            <a href="{% url 'write_journal' %}" class="btn-primary-custom px-4 py-2 text-decoration-none">
+                <i class="bi bi-pencil-square"></i> New Journal Entry
+            </a>
+        </div>
+    </div>
+
+    <!-- CRITICAL CRISIS BANNER -->
+    {% if active_crisis %}
+        <div class="alert alert-danger p-4 mb-4 border-0 shadow" style="border-radius: 20px; background: rgba(239, 68, 68, 0.12); border-left: 6px solid var(--danger) !important;">
+            <div class="d-flex align-items-start gap-3">
+                <i class="bi bi-exclamation-octagon-fill text-danger fs-3"></i>
+                <div>
+                    <h4 class="alert-heading text-danger fw-bold mb-1">Safety Support Escalation</h4>
+                    <p class="text-secondary small mb-3">
+                        Our safety engine detected expression of extreme stress or self-harm markers in your writing. You are not alone, and there is help. Please review our dedicated helpline contact support right away.
+                    </p>
+                    <a href="{% url 'crisis_support' %}" class="btn btn-danger px-4 py-2 fs-6 fw-bold" style="border-radius: 12px;">
+                        <i class="bi bi-telephone-fill"></i> Get Emergency Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Top KPI Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Daily Mood Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small fw-semibold">TODAY'S STATUS</span>
+                        <i class="bi bi-emoji-smile text-primary fs-4"></i>
+                    </div>
+                    {% if today_mood %}
+                        <div class="mb-2">
+                            <span class="display-6 fw-bold">{{ today_mood.mood_score }}</span><span class="text-muted">/5</span>
+                        </div>
+                        <p class="text-secondary small mb-0">Mood parameters logged today. Keep tracking daily!</p>
+                    {% else %}
+                        <h5 class="mb-2">Not Logged Yet</h5>
+                        <p class="text-secondary small mb-3">Record your mood, sleep, and energy levels for today.</p>
+                        <a href="{% url 'log_mood' %}" class="btn-secondary-custom py-2 px-3 text-decoration-none small text-center d-block">Log Mood Now</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Burnout Risk Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small fw-semibold">BURNOUT RISK INDEX</span>
+                        <i class="bi bi-shield-exclamation text-warning fs-4"></i>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge-custom {% if analytics.burnout_risk == 'HIGH' %}badge-high{% elif analytics.burnout_risk == 'MEDIUM' %}badge-medium{% else %}badge-low{% endif %} fw-bold fs-5">
+                            {{ analytics.burnout_risk }} RISK
+                        </span>
+                    </div>
+                    <!-- Visual Progress Bar for Burnout Risk -->
+                    <div class="progress mb-2" style="height: 6px; border-radius: 3px;">
+                        <div class="progress-bar {% if analytics.burnout_risk == 'HIGH' %}bg-danger{% elif analytics.burnout_risk == 'MEDIUM' %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" 
+                             style="width: {% if analytics.burnout_risk == 'HIGH' %}90%{% elif analytics.burnout_risk == 'MEDIUM' %}55%{% else %}15%{% endif %};" 
+                             aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <p class="text-secondary small mb-0" style="font-size: 0.75rem;">Based on your mood score, stress level, and sleep logs over the past 30 days.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Satisfaction Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small fw-semibold">STUDY SATISFACTION</span>
+                        <i class="bi bi-book text-success fs-4"></i>
+                    </div>
+                    <div class="mb-2">
+                        <span class="display-6 fw-bold">{{ analytics.avg_satisfaction }}</span><span class="text-muted">/5</span>
+                    </div>
+                    <p class="text-secondary small mb-0">Average study satisfaction metric. Target balanced revision plans.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logging Consistency Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small fw-semibold">CONSISTENCY</span>
+                        <i class="bi bi-calendar-check text-secondary fs-4"></i>
+                    </div>
+                    <div class="mb-2">
+                        <span class="display-6 fw-bold">{{ analytics.consistency_percentage }}%</span>
+                    </div>
+                    <p class="text-secondary small mb-0">Percentage of active days tracked over the past 30 days. Maintain the streak!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coach & Insights Section -->
+    <div class="row g-4 mb-4">
+        <!-- AI Coach Guidance (Latest recommendations) -->
+        <div class="col-lg-7">
+            <div class="glass-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h4 fw-bold">Personalized Coach Recommendations</h3>
+                    <a href="{% url 'coach_guidance' %}" class="btn-secondary-custom py-1 px-3 text-decoration-none small">View All</a>
+                </div>
+                
+                {% if recommendations %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for rec in recommendations %}
+                            <div class="p-3" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px; border-left: 4px solid var(--primary);">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-bold text-primary small">{{ rec.get_rec_type_display }}</span>
+                                    <span class="text-muted small" style="font-size: 0.75rem;">{{ rec.created_at|timesince }} ago</span>
+                                </div>
+                                <p class="text-secondary small mb-0">{{ rec.content }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-secondary small my-4 text-center">No recommendations yet. Save your first journal entry to trigger AI coaching.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Latest Journal Insights -->
+        <div class="col-lg-5">
+            <div class="glass-card h-100">
+                <h3 class="h4 fw-bold mb-4">Latest Journal Analysis</h3>
+                
+                {% if recent_journals %}
+                    {% with latest=recent_journals.0 %}
+                        <div class="mb-3">
+                            <span class="text-muted small">ENTRY FROM {{ latest.created_at|date:"M d, Y" }}</span>
+                            <p class="text-secondary small mt-1 mb-3">"{{ latest.content|truncatechars:100 }}"</p>
+                        </div>
+                        
+                        {% if latest.analysis %}
+                            <div class="p-3 mb-3" style="background: rgba(236, 72, 153, 0.04); border-radius: 12px;">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="fw-bold small text-secondary">Primary Emotion</span>
+                                    <span class="badge bg-secondary text-white small">{{ latest.analysis.primary_emotion }}</span>
+                                </div>
+                                <h6 class="small fw-bold mb-1">Empathetic Summary</h6>
+                                <p class="text-secondary small mb-3">{{ latest.analysis.summary }}</p>
+                                
+                                <!-- Stress triggers tags on dashboard -->
+                                {% if latest.analysis.stress_indicators %}
+                                    <h6 class="small fw-bold mb-1">Stress Triggers Identified</h6>
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        {% for tag in latest.analysis.stress_indicators %}
+                                            <span class="badge bg-danger-subtle text-danger small py-1 px-2" style="font-size: 0.75rem; border-radius: 6px;">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'journal_detail' latest.id %}" class="btn btn-outline-primary btn-sm w-100" style="border-radius: 10px;">
+                                View Full Emotional Breakdown
+                            </a>
+                        {% else %}
+                            <div class="alert alert-info py-2 px-3 small border-0 mb-0" style="border-radius: 10px;">
+                                AI analysis is pending for this entry.
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                {% else %}
+                    <p class="text-secondary small my-4 text-center">Write a journal entry to discover emotion summaries and burnout trends.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Journal Entries List -->
+    <div class="glass-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="h4 fw-bold">Recent Journal History</h3>
+            <a href="{% url 'journal_history' %}" class="btn-secondary-custom py-1 px-3 text-decoration-none small">View History</a>
+        </div>
+        
+        {% if recent_journals %}
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle mb-0">
+                    <thead>
+                        <tr class="text-muted border-bottom" style="font-size: 0.85rem;">
+                            <th>Date</th>
+                            <th>Snippet</th>
+                            <th>Burnout Risk</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for j in recent_journals %}
+                            <tr class="border-bottom" style="font-size: 0.9rem;">
+                                <td class="fw-semibold text-secondary" style="width: 150px;">{{ j.created_at|date:"M d, Y H:i" }}</td>
+                                <td class="text-secondary text-truncate" style="max-width: 300px;">{{ j.content|truncatechars:80 }}</td>
+                                <td>
+                                    {% if j.analysis %}
+                                        <span class="badge-custom {% if j.analysis.burnout_risk == 'HIGH' %}badge-high{% elif j.analysis.burnout_risk == 'MEDIUM' %}badge-medium{% else %}badge-low{% endif %}">
+                                            {{ j.analysis.burnout_risk }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted small">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'journal_detail' j.id %}" class="btn btn-sm btn-link text-decoration-none fw-semibold">Analyze</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-secondary small my-3 text-center">You haven't written any journals yet. Write today's journal entry to get started.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block title %}Journal Analysis - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="max-w-4xl mx-auto animated-fade">
+    
+    <div class="mb-4">
+        <a href="{% url 'journal_history' %}" class="text-secondary small text-decoration-none"><i class="bi bi-arrow-left"></i> Back to History</a>
+        <h2 class="h3 fw-bold mt-2 mb-1">Journal Entry & AI Analysis</h2>
+        <p class="text-secondary">Submitted on {{ journal.created_at|date:"l, F d, Y - H:i" }}</p>
+    </div>
+
+    <!-- Original Journal Entry Content -->
+    <div class="glass-card mb-4">
+        <h4 class="h5 fw-bold mb-3">Your Journal Content</h4>
+        <p class="text-secondary" style="white-space: pre-wrap; line-height: 1.6;">{{ journal.content }}</p>
+    </div>
+
+    <!-- AI Analysis Card -->
+    {% if journal.analysis %}
+        <div class="row g-4">
+            
+            <!-- Key Metrics Card -->
+            <div class="col-md-4">
+                <div class="glass-card h-100">
+                    <h5 class="fw-bold mb-3">Core Emotional Indicators</h5>
+                    
+                    <div class="mb-4">
+                        <span class="text-muted small d-block mb-1">PRIMARY EMOTION</span>
+                        <span class="badge bg-primary text-white fs-6 py-2 px-3">{{ journal.analysis.primary_emotion }}</span>
+                    </div>
+
+                    <div class="mb-2">
+                        <span class="text-muted small d-block mb-1">BURNOUT RISK ASSESSMENT</span>
+                        <span class="badge-custom {% if journal.analysis.burnout_risk == 'HIGH' %}badge-high{% elif journal.analysis.burnout_risk == 'MEDIUM' %}badge-medium{% else %}badge-low{% endif %} fw-bold fs-6">
+                            {{ journal.analysis.burnout_risk }} RISK
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary & Breakdown -->
+            <div class="col-md-8">
+                <div class="glass-card h-100">
+                    <h5 class="fw-bold mb-3">Empathetic Analysis Summary</h5>
+                    <p class="text-secondary small mb-4" style="line-height: 1.65; font-style: italic;">
+                        "{{ journal.analysis.summary }}"
+                    </p>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-shield-alert"></i> Stress Triggers / Indicators</h6>
+                            <ul class="text-secondary small ps-3">
+                                {% for indicator in journal.analysis.stress_indicators %}
+                                    <li class="mb-1">{{ indicator }}</li>
+                                {% empty %}
+                                    <li>None identified.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-success mb-2"><i class="bi bi-graph-up"></i> Motivation Trends</h6>
+                            <ul class="text-secondary small ps-3">
+                                {% for trend in journal.analysis.motivation_trends %}
+                                    <li class="mb-1">{{ trend }}</li>
+                                {% empty %}
+                                    <li>None identified.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    {% else %}
+        <div class="alert alert-warning py-3 px-4 border-0" style="border-radius: 15px;">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-clock-history fs-4"></i>
+                <p class="mb-0"><strong>Analysis Pending:</strong> The AI model analysis is currently running for this journal entry. Please refresh the page in a few moments.</p>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

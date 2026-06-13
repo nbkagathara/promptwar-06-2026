@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block title %}AI Coach Guidance - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="max-w-4xl mx-auto animated-fade">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="h3 mb-1 fw-bold">Personalized Wellness Coach</h2>
+            <p class="text-secondary">Custom-generated advice using your target exam syllabus load, mood levels, and journal entries.</p>
+        </div>
+        <form method="post" action="{% url 'coach_guidance' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-primary-custom px-4 py-2 border-0">
+                <i class="bi bi-arrow-repeat"></i> Update AI Advice
+            </button>
+        </form>
+    </div>
+
+    <!-- Coach guidelines Grid layout -->
+    {% if recommendations %}
+        <div class="row g-4">
+            {% for rec in recommendations %}
+                <div class="col-md-6">
+                    <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge-custom 
+                                    {% if rec.rec_type == 'MINDFULNESS' %}badge-low
+                                    {% elif rec.rec_type == 'STUDY_BREAK' %}badge-medium
+                                    {% elif rec.rec_type == 'MOTIVATION' %}badge-high
+                                    {% else %}badge-low
+                                    {% endif %} fw-bold">
+                                    {{ rec.get_rec_type_display }}
+                                </span>
+                                <span class="text-muted small" style="font-size: 0.75rem;">{{ rec.created_at|date:"M d, H:i" }}</span>
+                            </div>
+                            
+                            <h4 class="h5 fw-bold mb-2">
+                                {% if rec.rec_type == 'MINDFULNESS' %}<i class="bi bi-brightness-high-fill text-warning"></i> Breathing & Mindfulness
+                                {% elif rec.rec_type == 'STUDY_BREAK' %}<i class="bi bi-clock-history text-primary"></i> Study-Life Balance
+                                {% elif rec.rec_type == 'MOTIVATION' %}<i class="bi bi-award-fill text-danger"></i> Contextual Encouragement
+                                {% else %}<i class="bi bi-calendar-range text-info"></i> Time Management
+                                {% endif %}
+                            </h4>
+
+                            <p class="text-secondary small mb-0" style="line-height: 1.6;">
+                                {{ rec.content }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="glass-card text-center py-5">
+            <i class="bi bi-chat-heart display-3 text-muted mb-3"></i>
+            <h4 class="fw-bold mb-2">Welcome to Your AI Coach!</h4>
+            <p class="text-secondary small mb-4">We haven't gathered enough entries to configure recommendations yet. Log a daily mood and write your first journal entry, or trigger a generation manual request below.</p>
+            <form method="post" action="{% url 'coach_guidance' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-primary-custom px-4 py-2 border-0">Initialize AI Coach</button>
+            </form>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

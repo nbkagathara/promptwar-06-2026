@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block title %}Analytics - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="animated-fade">
+    
+    <!-- Header with Range Toggles -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="h3 mb-1 fw-bold">Analytics Dashboard</h2>
+            <p class="text-secondary">Visualize your mood trends, stress indices, and study-life balancing consistency.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="?days=7" class="btn {% if days == 7 %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm px-3" style="border-radius: 8px;">7 Days</a>
+            <a href="?days=14" class="btn {% if days == 14 %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm px-3" style="border-radius: 8px;">14 Days</a>
+            <a href="?days=30" class="btn {% if days == 30 %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm px-3" style="border-radius: 8px;">30 Days</a>
+        </div>
+    </div>
+
+    <!-- Stats Banner -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card text-center p-3">
+                <span class="text-muted small fw-semibold">AVG MOOD</span>
+                <h4 class="fw-bold mb-0 text-primary mt-1">{{ metrics.avg_mood }}/5</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center p-3">
+                <span class="text-muted small fw-semibold">AVG STRESS</span>
+                <h4 class="fw-bold mb-0 text-warning mt-1">{{ metrics.avg_stress }}/5</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center p-3">
+                <span class="text-muted small fw-semibold">AVG SLEEP</span>
+                <h4 class="fw-bold mb-0 text-success mt-1">{{ metrics.avg_sleep }}/5</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center p-3">
+                <span class="text-muted small fw-semibold">CONSISTENCY</span>
+                <h4 class="fw-bold mb-0 text-secondary mt-1">{{ metrics.consistency_percentage }}%</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Cards -->
+    <div class="row g-4 mb-4">
+        
+        <!-- Mood & Stress Trend Chart -->
+        <div class="col-lg-8">
+            <div class="glass-card">
+                <h4 class="h5 fw-bold mb-3">Mood & Stress Dynamics</h4>
+                <div style="position: relative; height: 320px; width: 100%;">
+                    <canvas id="moodStressChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Burnout Summary & Risk Breakdown -->
+        <div class="col-lg-4">
+            <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h4 class="h5 fw-bold mb-3">Burnout Risk Analysis</h4>
+                    <div class="text-center py-3">
+                        <div class="d-inline-block p-4 rounded-circle mb-3 {% if metrics.burnout_risk == 'HIGH' %}bg-danger-subtle{% elif metrics.burnout_risk == 'MEDIUM' %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                            <i class="bi bi-shield-check fs-1 {% if metrics.burnout_risk == 'HIGH' %}text-danger{% elif metrics.burnout_risk == 'MEDIUM' %}text-warning{% else %}text-success{% endif %}"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1 {% if metrics.burnout_risk == 'HIGH' %}text-danger{% elif metrics.burnout_risk == 'MEDIUM' %}text-warning{% else %}text-success{% endif %}">
+                            {{ metrics.burnout_risk }} RISK
+                        </h3>
+                    </div>
+                    <p class="text-secondary small text-center" style="line-height: 1.6;">
+                        Your current stress and sleep logs indicate a <strong>{% if metrics.burnout_risk == 'HIGH' %}high danger of exhaustion. We recommend taking a full day rest break.{% elif metrics.burnout_risk == 'MEDIUM' %}moderate fatigue levels. Ensure you sleep at least 7 hours.{% else %}healthy study balance. Maintain your current routines!{% endif %}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Energy vs Satisfaction -->
+    <div class="glass-card">
+        <h4 class="h5 fw-bold mb-3">Energy & Study Satisfaction Correlation</h4>
+        <div style="position: relative; height: 260px; width: 100%;">
+            <canvas id="energySatisfactionChart"></canvas>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Safely parse JSON trends passed from view
+    const trendData = JSON.parse('{{ trends_json|safe }}');
+
+    // Mood and Stress Line Chart
+    const ctx1 = document.getElementById('moodStressChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: trendData.dates,
+            datasets: [
+                {
+                    label: 'Mood Score',
+                    data: trendData.moods,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#6366f1'
+                },
+                {
+                    label: 'Stress Level',
+                    data: trendData.stress,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#f59e0b'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 1,
+                    max: 5,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Energy & Study Satisfaction Line Chart
+    const ctx2 = document.getElementById('energySatisfactionChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: trendData.dates,
+            datasets: [
+                {
+                    label: 'Energy Level',
+                    data: trendData.energy,
+                    borderColor: '#ec4899',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointBackgroundColor: '#ec4899'
+                },
+                {
+                    label: 'Study Satisfaction',
+                    data: trendData.satisfaction,
+                    borderColor: '#10b981',
+                    backgroundColor: 'transparent',
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointBackgroundColor: '#10b981'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 1,
+                    max: 5,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+{% endblock %}

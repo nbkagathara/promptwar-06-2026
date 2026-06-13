@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}AuraWell - AI-Powered Student Wellness Companion{% endblock %}
+
+{% block content_layout %}
+<div class="min-vh-100 d-flex flex-column justify-content-between" style="background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent 600px), radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.1), transparent 600px); background-color: var(--bg-primary);">
+    
+    <!-- Navbar -->
+    <header class="container py-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-heart-pulse-fill text-danger fs-3"></i>
+            <span class="fs-4 fw-bold" style="font-family: var(--font-heading);">AuraWell</span>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+            <a href="{% url 'login' %}" class="btn-secondary-custom px-4 py-2 text-decoration-none">Sign In</a>
+            <a href="{% url 'register' %}" class="btn-primary-custom px-4 py-2 text-decoration-none">Get Started</a>
+        </div>
+    </header>
+
+    <!-- Hero Content -->
+    <main class="container my-auto py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 animated-fade">
+                <h1 class="display-3 fw-bold mb-4" style="font-family: var(--font-heading); line-height: 1.15; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Thrive Under Pressure.
+                </h1>
+                <p class="fs-5 text-secondary mb-5" style="line-height: 1.6;">
+                    AuraWell is a safe, empathetic digital wellness companion built specifically for students preparing for high-stakes exams like JEE, NEET, UPSC, and CAT. Track your stress, write journal entries, and get personalized mindfulness guidance.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'register' %}" class="btn-primary-custom btn-lg px-5 py-3 text-decoration-none">Create Free Account</a>
+                    <a href="#features" class="btn-secondary-custom btn-lg px-4 py-3 text-decoration-none">Explore Features</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <!-- Mock Dashboard Interface Showcase inside a glass card -->
+                <div class="glass-card p-4 animated-fade" style="animation-delay: 0.2s; border-radius: 24px;">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge-custom badge-medium">Exam: UPSC Prep</span>
+                        </div>
+                        <span class="text-muted small">Updated: Just Now</span>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="mb-2">Empathetic Summary</h4>
+                        <p class="text-secondary small italic">"You are working exceptionally hard, but your sleep indicates potential fatigue. Remember to allocate time for rest."</p>
+                    </div>
+                    <!-- Mock charts -->
+                    <div class="p-3 mb-3" style="background: rgba(99, 102, 241, 0.08); border-radius: 12px;">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold small">Daily Energy Level</span>
+                            <span class="text-primary fw-bold small">80%</span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div class="p-3" style="background: rgba(236, 72, 153, 0.08); border-radius: 12px;">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold small">Burnout Prevention Index</span>
+                            <span class="text-secondary fw-bold small">Optimal</span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 15%;" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="container py-4 text-center border-top" style="border-color: var(--border-color) !important;">
+        <p class="text-muted small">© 2026 AuraWell. Safe, anonymous, and focused on your mental well-being. Not a substitute for clinical therapy.</p>
+    </footer>
+
+</div>
+{% endblock %}

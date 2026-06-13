@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}Emergency Wellness Resources - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="max-w-3xl mx-auto animated-fade">
+    
+    <!-- Warm Supportive Banner -->
+    <div class="glass-card mb-4 text-center p-5" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(99, 102, 241, 0.05));">
+        <i class="bi bi-heart-fill text-danger display-4 mb-3"></i>
+        <h2 class="fw-bold mb-2">You are not alone. Help is available.</h2>
+        <p class="text-secondary fs-5 mb-0">
+            Exam preparation is incredibly challenging, and it is completely normal to feel overwhelmed. Professional support can make a major difference.
+        </p>
+    </div>
+
+    <!-- Active Helpline List -->
+    <div class="glass-card mb-4">
+        <h3 class="h4 fw-bold mb-4"><i class="bi bi-telephone-inbound-fill text-success"></i> Immediate Support & Helpdesk</h3>
+        
+        <div class="d-flex flex-column gap-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="fw-bold mb-1">AuraWell Mental Wellness Helpdesk</h5>
+                    <p class="text-secondary small mb-0">Confidential, immediate mental health support and counseling for exam-related stress.</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                    <a href="tel:9099275174" class="btn btn-success fw-bold w-100 mb-2" style="border-radius: 10px;">
+                        <i class="bi bi-telephone"></i> Call: 9099275174
+                    </a>
+                    <a href="mailto:bkagathara@gmail.com" class="btn btn-outline-primary fw-bold w-100" style="border-radius: 10px; font-size: 0.85rem;">
+                        <i class="bi bi-envelope"></i> bkagathara@gmail.com
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Active Anxiety Grounding Exercise -->
+    <div class="glass-card">
+        <h3 class="h4 fw-bold mb-3"><i class="bi bi-activity text-info"></i> Instant Grounding: The 5-4-3-2-1 Technique</h3>
+        <p class="text-secondary small mb-4">
+            If you are experiencing a panic attack or high anxiety, follow this sensory mindfulness technique to bring your focus back to the present moment:
+        </p>
+        
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="p-3 text-center h-100" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px;">
+                    <h5 class="fw-bold text-primary">5 Sight</h5>
+                    <p class="text-secondary small mb-0">Look around and name 5 things you can see in the room right now.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 text-center h-100" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px;">
+                    <h5 class="fw-bold text-primary">4 Touch</h5>
+                    <p class="text-secondary small mb-0">Identify 4 things you can physically feel (e.g. chair support, clothes, pen).</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 text-center h-100" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px;">
+                    <h5 class="fw-bold text-primary">3 Sound</h5>
+                    <p class="text-secondary small mb-0">Listen and name 3 distinct sounds you can hear (e.g. fan, traffic, voices).</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 text-center h-100" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px;">
+                    <h5 class="fw-bold text-primary">2 Smell</h5>
+                    <p class="text-secondary small mb-0">Name 2 things you can smell (e.g. coffee, paper, breeze).</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 text-center h-100" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px;">
+                    <h5 class="fw-bold text-primary">1 Taste</h5>
+                    <p class="text-secondary small mb-0">Focus on 1 thing you can taste (e.g. drinking a sip of water).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

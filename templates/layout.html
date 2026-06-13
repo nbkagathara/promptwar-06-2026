@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content_layout %}
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-heart-pulse-fill text-danger fs-3"></i>
+            <span class="fs-4 fw-bold" style="font-family: var(--font-heading);">AuraWell</span>
+        </div>
+        
+        <div class="small text-muted mb-4">
+            Exam Prep Companion
+        </div>
+
+        <nav class="d-flex flex-column gap-2 flex-grow-1">
+            <a href="{% url 'dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <a href="{% url 'log_mood' %}" class="nav-link-item {% if request.resolver_match.url_name == 'log_mood' %}active{% endif %}">
+                <i class="bi bi-emoji-smile-fill"></i> Log Mood
+            </a>
+            <a href="{% url 'mood_history' %}" class="nav-link-item {% if request.resolver_match.url_name == 'mood_history' %}active{% endif %}">
+                <i class="bi bi-calendar-check-fill"></i> Mood Logs
+            </a>
+            <a href="{% url 'write_journal' %}" class="nav-link-item {% if request.resolver_match.url_name == 'write_journal' %}active{% endif %}">
+                <i class="bi bi-journal-text"></i> Write Journal
+            </a>
+            <a href="{% url 'journal_history' %}" class="nav-link-item {% if request.resolver_match.url_name == 'journal_history' %}active{% endif %}">
+                <i class="bi bi-book-half"></i> Journals
+            </a>
+            <a href="{% url 'coach_guidance' %}" class="nav-link-item {% if request.resolver_match.url_name == 'coach_guidance' %}active{% endif %}">
+                <i class="bi bi-chat-heart-fill"></i> AI Coach
+            </a>
+            <a href="{% url 'analytics_dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'analytics_dashboard' %}active{% endif %}">
+                <i class="bi bi-graph-up-arrow"></i> Analytics
+            </a>
+            <a href="{% url 'profile' %}" class="nav-link-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                <i class="bi bi-person-fill-gear"></i> Set Target
+            </a>
+            <hr class="my-3" style="border-color: var(--border-color);">
+            <a href="{% url 'crisis_support' %}" class="nav-link-item text-danger fw-bold {% if request.resolver_match.url_name == 'crisis_support' %}active{% endif %}">
+                <i class="bi bi-exclamation-triangle-fill"></i> Crisis Helpline
+            </a>
+        </nav>
+
+        <!-- Sidebar Footer Actions -->
+        <div class="d-flex flex-column gap-2">
+            <div class="text-center py-2 text-muted small">
+                Logged in as <strong>{{ request.user.username }}</strong>
+            </div>
+            <!-- Django Auth logout post action is best, but a simple form / link is standard -->
+            <form action="{% url 'logout' %}" method="post" class="w-100">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger w-100 py-2" style="border-radius: 12px;">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Message Notification Banner -->
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show" role="alert" style="border-radius: 15px; border: none; box-shadow: var(--card-shadow);">
+                        <strong>{% if message.tags == 'error' %}Escalation Notice:{% else %}Update:{% endif %}</strong> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block main_content %}
+        {% endblock %}
+    </main>
+</div>
+{% endblock %}

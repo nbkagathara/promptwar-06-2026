@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}Set Target Exam - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="max-w-2xl mx-auto animated-fade">
+    <div class="mb-4">
+        <h2 class="h3 mb-1 fw-bold">Target Exam Settings</h2>
+        <p class="text-secondary">Update the exam you are preparing for to customize the AI coach's guidance context.</p>
+    </div>
+
+    <div class="glass-card">
+        <form method="post" action="{% url 'profile' %}">
+            {% csrf_token %}
+            <div class="form-group-custom mb-4">
+                <label for="id_exam_type" class="form-label fw-semibold">Which exam are you preparing for?</label>
+                {{ form.exam_type }}
+                {% if form.exam_type.errors %}
+                    <div class="text-danger small mt-1">{{ form.exam_type.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text text-muted small mt-2">
+                    Selecting your exam helps our AI customize specific study-break schedules, breathing exercises, and encouragement messages suitable for your syllabus intensity.
+                </div>
+            </div>
+
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn-primary-custom px-4 py-2">Save Settings</button>
+                <a href="{% url 'dashboard' %}" class="btn-secondary-custom px-4 py-2 text-decoration-none">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
