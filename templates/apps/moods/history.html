@@ -32,11 +32,11 @@
                         {% for log in mood_logs %}
                             <tr class="border-bottom text-secondary" style="font-size: 0.9rem;">
                                 <td class="fw-bold text-dark dark-text-white">{{ log.logged_date|date:"l, M d, Y" }}</td>
-                                <td><span class="badge bg-primary text-white">{{ log.mood_score }}/5</span></td>
-                                <td><span class="badge bg-warning text-dark">{{ log.stress_score }}/5</span></td>
-                                <td><span class="badge bg-info text-white">{{ log.energy_level }}/5</span></td>
-                                <td><span class="badge bg-dark text-white">{{ log.sleep_quality }}/5</span></td>
-                                <td><span class="badge bg-secondary text-white">{{ log.study_satisfaction }}/5</span></td>
+                                <td><span class="badge bg-primary text-white">{{ log.get_mood_score_display }}</span></td>
+                                <td><span class="badge bg-warning text-dark">{{ log.get_stress_score_display }}</span></td>
+                                <td><span class="badge bg-info text-white">{{ log.get_energy_level_display }}</span></td>
+                                <td><span class="badge bg-dark text-white">{{ log.get_sleep_quality_display }}</span></td>
+                                <td><span class="badge bg-secondary text-white">{{ log.get_study_satisfaction_display }}</span></td>
                             </tr>
                         {% endfor %}
                     </tbody>
