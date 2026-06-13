@@ -35,6 +35,10 @@ class MainDashboardView(LoginRequiredMixin, View):
         # 6. Check if profile exists; if not, suggest completing it
         profile = getattr(user, "profile", None)
 
+        # 7. Fetch latest connected wearable health metrics
+        from apps.moods.models import HealthDataLog
+        today_health = HealthDataLog.objects.filter(user=user).order_by("-logged_date").first()
+
         context = {
             "active_crisis": active_crisis,
             "today_mood": today_mood,
@@ -42,6 +46,7 @@ class MainDashboardView(LoginRequiredMixin, View):
             "recommendations": recommendations,
             "analytics": analytics_summary,
             "profile": profile,
+            "today_health": today_health,
         }
         return render(request, "apps/dashboard/dashboard.html", context)
 

@@ -55,3 +55,20 @@ class MoodLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s mood on {self.logged_date}"
+
+
+class HealthDataLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="health_logs")
+    logged_date = models.DateField(default=timezone.now)
+    steps = models.IntegerField(default=0, help_text="Daily steps synced from device")
+    sleep_hours = models.FloatField(default=0.0, help_text="Daily sleep duration in hours")
+    resting_heart_rate = models.IntegerField(default=70, help_text="Average resting heart rate")
+    source = models.CharField(max_length=50, default="Apple Health")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-logged_date"]
+        unique_together = ("user", "logged_date")
+
+    def __str__(self):
+        return f"{self.user.username}'s health logs on {self.logged_date} ({self.source})"

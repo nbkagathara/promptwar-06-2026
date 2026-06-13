@@ -126,6 +126,65 @@
         </div>
     </div>
 
+    <!-- Wearable Health Integration Panel -->
+    <div class="glass-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h4 class="h5 fw-bold mb-1"><i class="bi bi-heart-pulse text-danger"></i> Connected Health Wearables (Apple Health / Google Fit)</h4>
+                <p class="text-secondary small mb-0">Synchronize your sleep, steps, and activity levels to allow context-aware AI wellness suggestions.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <form action="{% url 'sync_health' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="source" value="Apple Health">
+                    <button type="submit" class="btn btn-sm btn-outline-primary" style="border-radius: 10px;">
+                        <i class="bi bi-apple"></i> Sync Apple Health
+                    </button>
+                </form>
+                <form action="{% url 'sync_health' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="source" value="Google Fit">
+                    <button type="submit" class="btn btn-sm btn-outline-success" style="border-radius: 10px;">
+                        <i class="bi bi-google"></i> Sync Google Fit
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% if today_health %}
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px;">
+                        <span class="text-muted small d-block">TODAY'S STEPS</span>
+                        <strong class="fs-5 text-primary">{{ today_health.steps }}</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center" style="background: rgba(16, 185, 129, 0.04); border-radius: 12px;">
+                        <span class="text-muted small d-block">SLEEP DURATION</span>
+                        <strong class="fs-5 text-success">{{ today_health.sleep_hours }} hrs</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center" style="background: rgba(239, 68, 68, 0.04); border-radius: 12px;">
+                        <span class="text-muted small d-block">RESTING HEART RATE</span>
+                        <strong class="fs-5 text-danger">{{ today_health.resting_heart_rate }} bpm</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center" style="background: rgba(245, 158, 11, 0.04); border-radius: 12px;">
+                        <span class="text-muted small d-block">CONNECTION SOURCE</span>
+                        <strong class="fs-5 text-warning">{{ today_health.source }}</strong>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info py-2 px-3 small border-0 mb-0" style="border-radius: 10px;">
+                No wearable health data synced today. Click one of the buttons above to sync simulated Apple Health or Google Fit activity logs.
+            </div>
+        {% endif %}
+    </div>
+
     <!-- Coach & Insights Section -->
     <div class="row g-4 mb-4">
         <!-- AI Coach Guidance (Latest recommendations) -->

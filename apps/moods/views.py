@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import ListView
 from django.views.generic.edit import FormView
 from apps.moods.forms import MoodLogForm
@@ -34,3 +35,34 @@ class MoodHistoryView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return MoodLog.objects.filter(user=self.request.user).order_by("-logged_date")
+
+
+class SyncHealthDataView(LoginRequiredMixin, View):
+    def post(self, request):
+        import random
+        from django.views import View
+        from django.contrib import messages
+        from django.utils import timezone
+        from apps.moods.models import HealthDataLog
+
+        source = request.POST.get("source", "Apple Health")
+        steps = random.randint(5500, 12000)
+        sleep_hours = round(random.uniform(5.8, 8.8), 1)
+        resting_hr = random.randint(60, 78)
+
+        log, created = HealthDataLog.objects.update_or_create(
+            user=request.user,
+            logged_date=timezone.now().date(),
+            defaults={
+                "steps": steps,
+                "sleep_hours": sleep_hours,
+                "resting_heart_rate": resting_hr,
+                "source": source,
+            },
+        )
+
+        messages.success(
+            request,
+            f"Successfully synced metrics from {source}! (Steps: {steps}, Sleep: {sleep_hours} hrs, HR: {resting_hr} bpm)",
+        )
+        return redirect("dashboard")

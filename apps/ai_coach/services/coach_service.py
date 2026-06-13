@@ -43,9 +43,23 @@ class CoachService:
         journals = JournalEntry.objects.filter(user=user).order_by("-created_at")[:3]
         recent_journals = [j.content[:200] for j in journals]
 
+        # 3.5. Get last 3 wearable health logs
+        from apps.moods.models import HealthDataLog
+        health_logs = HealthDataLog.objects.filter(user=user).order_by("-logged_date")[:3]
+        health_history = [
+            {
+                "date": log.logged_date.isoformat(),
+                "steps": log.steps,
+                "sleep_hours": log.sleep_hours,
+                "heart_rate": log.resting_heart_rate,
+                "source": log.source
+            }
+            for log in health_logs
+        ]
+
         # 4. Generate recommendations
         guidance_data = AIService.generate_coach_guidance(
-            profile_info, mood_history, recent_journals
+            profile_info, mood_history, recent_journals, health_history
         )
 
         recs = []
