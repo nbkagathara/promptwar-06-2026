@@ -50,8 +50,8 @@ class MoodLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-logged_date"]
-        unique_together = ("user", "logged_date")
+        ordering = ["-logged_date", "-created_at"]
+
 
     def __str__(self):
         return f"{self.user.username}'s mood on {self.logged_date}"

@@ -24,8 +24,8 @@ def test_log_mood_service(create_test_user):
     assert log.stress_score == 2
     assert log.logged_date == datetime.date.today()
 
-    # Update parameters for the same day
-    updated_log = MoodService.log_daily_mood(
+    # Log another parameter for the same day (should create a new entry)
+    new_log = MoodService.log_daily_mood(
         user=user,
         mood_score=5,
         stress_score=1,
@@ -34,9 +34,9 @@ def test_log_mood_service(create_test_user):
         study_satisfaction=5,
     )
     
-    assert updated_log.id == log.id
-    assert updated_log.mood_score == 5
-    assert updated_log.stress_score == 1
+    assert new_log.id != log.id
+    assert MoodLog.objects.filter(user=user).count() == 2
+
 
 
 @pytest.mark.django_db

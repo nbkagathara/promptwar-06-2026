@@ -1,65 +1,356 @@
 {% extends "layout.html" %}
 
-{% block title %}Log Daily Mood - AuraWell{% endblock %}
+{% block title %}Log Daily Parameters - AuraWell{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Styling for Mood Log Interactive Form */
+    .mood-title {
+        font-family: var(--font-heading);
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .rating-container {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+    }
+    
+    .rating-box {
+        flex: 1;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.2rem 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .rating-box:hover {
+        transform: translateY(-2px);
+        background: white;
+        box-shadow: var(--card-shadow);
+        border-color: var(--primary);
+    }
+    
+    .rating-box.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white !important;
+        border-color: transparent;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+    }
+    
+    .rating-box.active .text-secondary {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+    
+    .rating-emoji {
+        font-size: 1.8rem;
+        margin-bottom: 0.25rem;
+        display: block;
+        transition: transform 0.2s ease;
+    }
+    
+    .rating-box:hover .rating-emoji {
+        transform: scale(1.15);
+    }
+    
+    .rating-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+        display: block;
+    }
+    
+    /* Segmented pill control */
+    .pill-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    @media (min-width: 576px) {
+        .pill-group {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+    }
+    
+    .pill-option {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.75rem 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+    }
+    
+    .pill-option:hover {
+        background: white;
+        border-color: var(--primary);
+    }
+    
+    .pill-option.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    }
+    
+    /* Vertical stack layout for small widgets */
+    .pill-group.flex-column {
+        flex-direction: column !important;
+    }
+    
+    .pill-group.flex-column .pill-option {
+        width: 100%;
+        text-align: left;
+        justify-content: flex-start;
+        padding: 0.65rem 1rem;
+    }
+</style>
+{% endblock %}
 
 {% block main_content %}
-<div class="max-w-2xl mx-auto animated-fade">
-    <div class="mb-4">
-        <h2 class="h3 mb-1 fw-bold">Log Your Mood</h2>
-        <p class="text-secondary">Track how you feel today to help us customize your mindfulness exercises.</p>
+<div class="max-w-3xl mx-auto animated-fade">
+    <div class="mb-4 text-center">
+        <h2 class="h2 mb-2 mood-title">Log Daily Parameters</h2>
+        <p class="text-secondary" style="max-width: 550px; margin: 0 auto;">Track how you are coping with your study loads, stress levels, sleep, and overall wellness. Your companion uses these parameters to tailor your care suggestions.</p>
     </div>
 
-    <div class="glass-card">
-        <form method="post" action="{% url 'log_mood' %}">
+    <div class="glass-card p-4">
+        <form method="post" action="{% url 'log_mood' %}" id="mood-log-form">
             {% csrf_token %}
             
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label for="id_mood_score" class="fw-semibold">Mood Score</label>
-                        {{ form.mood_score }}
-                        <div class="form-text text-muted small mt-1">1: Very Low, 5: Excellent</div>
+            <!-- Hide standard django select inputs so we can bind them via JS -->
+            <div class="d-none">
+                {{ form.mood_score }}
+                {{ form.stress_score }}
+                {{ form.energy_level }}
+                {{ form.sleep_quality }}
+                {{ form.study_satisfaction }}
+            </div>
+            
+            <!-- 1. Mood Score Slider/Grid -->
+            <div class="form-group-custom mb-4">
+                <label class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                    <span>1. How is your mood today?</span>
+                    <span class="text-muted small fw-normal">(1: Depressed, 5: Energetic)</span>
+                </label>
+                <div class="rating-container" data-target="id_mood_score">
+                    <div class="rating-box" data-value="1">
+                        <span class="rating-emoji">😭</span>
+                        <span class="rating-label">Depressed</span>
                     </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label for="id_stress_score" class="fw-semibold">Stress Level</label>
-                        {{ form.stress_score }}
-                        <div class="form-text text-muted small mt-1">1: Calm/No Stress, 5: Extreme Stress</div>
+                    <div class="rating-box" data-value="2">
+                        <span class="rating-emoji">😟</span>
+                        <span class="rating-label">Anxious</span>
                     </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="form-group-custom">
-                        <label for="id_energy_level" class="fw-semibold">Energy Level</label>
-                        {{ form.energy_level }}
-                        <div class="form-text text-muted small mt-1">1: Very Low, 5: Very High</div>
+                    <div class="rating-box" data-value="3">
+                        <span class="rating-emoji">😐</span>
+                        <span class="rating-label">Okay / Neutral</span>
                     </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="form-group-custom">
-                        <label for="id_sleep_quality" class="fw-semibold">Sleep Quality</label>
-                        {{ form.sleep_quality }}
-                        <div class="form-text text-muted small mt-1">1: Terrible, 5: Excellent</div>
+                    <div class="rating-box" data-value="4">
+                        <span class="rating-emoji">🙂</span>
+                        <span class="rating-label">Happy</span>
                     </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="form-group-custom">
-                        <label for="id_study_satisfaction" class="fw-semibold">Study Satisfaction</label>
-                        {{ form.study_satisfaction }}
-                        <div class="form-text text-muted small mt-1">1: Unsatisfied, 5: Highly Satisfied</div>
+                    <div class="rating-box" data-value="5">
+                        <span class="rating-emoji">🤩</span>
+                        <span class="rating-label">Energetic</span>
                     </div>
                 </div>
             </div>
 
-            <div class="d-flex gap-3 mt-4">
-                <button type="submit" class="btn-primary-custom px-4 py-2">Log Parameters</button>
-                <a href="{% url 'dashboard' %}" class="btn-secondary-custom px-4 py-2 text-decoration-none">Back</a>
+            <hr class="my-4" style="border-color: var(--border-color);">
+
+            <!-- 2. Stress Score (Exam specific) -->
+            <div class="form-group-custom mb-4">
+                <label class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                    <span>2. Preparation Stress Level?</span>
+                    <span class="text-muted small fw-normal">(How is your exam prep stress today?)</span>
+                </label>
+                <div class="pill-group" data-target="id_stress_score">
+                    <div class="pill-option" data-value="1">
+                        <span>🟢</span> No Stress / Calm
+                    </div>
+                    <div class="pill-option" data-value="2">
+                        <span>🟡</span> Low Stress
+                    </div>
+                    <div class="pill-option" data-value="3">
+                        <span>🟠</span> Moderate Stress
+                    </div>
+                    <div class="pill-option" data-value="4">
+                        <span>🔴</span> High Stress
+                    </div>
+                    <div class="pill-option" data-value="5">
+                        <span>🔥</span> Overwhelmed
+                    </div>
+                </div>
             </div>
+
+            <hr class="my-4" style="border-color: var(--border-color);">
+
+            <!-- 3. Energy Level, Sleep Quality, Study Satisfaction (Three Columns) -->
+            <div class="row g-4 mb-4">
+                <!-- Energy -->
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label class="fw-bold text-dark fs-6 d-block mb-2">
+                            <span>3. Energy Level</span>
+                        </label>
+                        <div class="pill-group flex-column" data-target="id_energy_level">
+                            <div class="pill-option" data-value="1">🪫 Exhausted</div>
+                            <div class="pill-option" data-value="2">📉 Sluggish</div>
+                            <div class="pill-option" data-value="3">🔋 Steady / Normal</div>
+                            <div class="pill-option" data-value="4">⚡ High Energy</div>
+                            <div class="pill-option" data-value="5">🚀 Peak / Active</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sleep -->
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label class="fw-bold text-dark fs-6 d-block mb-2">
+                            <span>4. Sleep Quality</span>
+                        </label>
+                        <div class="pill-group flex-column" data-target="id_sleep_quality">
+                            <div class="pill-option" data-value="1">😴 Restless</div>
+                            <div class="pill-option" data-value="2">🥱 Poor Sleep</div>
+                            <div class="pill-option" data-value="3">🛌 Sufficient</div>
+                            <div class="pill-option" data-value="4">💤 Good Rest</div>
+                            <div class="pill-option" data-value="5">✨ Restorative</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Study Satisfaction -->
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label class="fw-bold text-dark fs-6 d-block mb-2">
+                            <span>5. Study Satisfaction</span>
+                        </label>
+                        <div class="pill-group flex-column" data-target="id_study_satisfaction">
+                            <div class="pill-option" data-value="1">❌ Unsatisfied</div>
+                            <div class="pill-option" data-value="2">⚠️ Disappointed</div>
+                            <div class="pill-option" data-value="3">📝 Acceptable</div>
+                            <div class="pill-option" data-value="4">💡 Productive</div>
+                            <div class="pill-option" data-value="5">🌟 Peak Day</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button Bar -->
+            <div class="d-flex gap-3 justify-content-center mt-5">
+                <button type="submit" class="btn-primary-custom px-5 py-2.5 border-0 shadow" style="font-size: 1.05rem; border-radius: 16px;">
+                    <i class="bi bi-check-circle-fill"></i> Save Daily Log
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn-secondary-custom px-4 py-2.5 text-decoration-none d-flex align-items-center" style="border-radius: 16px;">
+                    Cancel
+                </a>
+            </div>
+
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Setup visual interactive selectors
+        const ratingContainers = document.querySelectorAll(".rating-container");
+        const pillGroups = document.querySelectorAll(".pill-group");
+
+        // Helper to bind clicks to elements
+        function setupSelector(selectorGroup, isRatingBox = false) {
+            const targetInputId = selectorGroup.getAttribute("data-target");
+            const targetInput = document.getElementById(targetInputId);
+            
+            if (!targetInput) return;
+
+            const items = selectorGroup.querySelectorAll(isRatingBox ? ".rating-box" : ".pill-option");
+            
+            // Set initial state from form default value
+            const initialValue = targetInput.value;
+            if (initialValue) {
+                items.forEach(item => {
+                    if (item.getAttribute("data-value") === initialValue) {
+                        item.classList.add("active");
+                    }
+                });
+            }
+
+            // Click Handler
+            items.forEach(item => {
+                item.addEventListener("click", function () {
+                    // Remove active from all items in this group
+                    items.forEach(i => i.classList.remove("active"));
+                    // Add active to current
+                    this.classList.add("active");
+                    // Update hidden input value
+                    targetInput.value = this.getAttribute("data-value");
+                });
+            });
+        }
+
+        ratingContainers.forEach(container => setupSelector(container, true));
+        pillGroups.forEach(group => setupSelector(group, false));
+
+        // Form Submit Validation: Ensure all inputs have a selected value
+        const form = document.getElementById("mood-log-form");
+        form.addEventListener("submit", function (e) {
+            const inputsToCheck = [
+                "id_mood_score",
+                "id_stress_score",
+                "id_energy_level",
+                "id_sleep_quality",
+                "id_study_satisfaction"
+            ];
+            
+            let missingField = false;
+            
+            inputsToCheck.forEach(id => {
+                const input = document.getElementById(id);
+                if (!input || !input.value) {
+                    missingField = true;
+                    // Find matching container and add error styling or notification
+                    const container = document.querySelector(`[data-target="${id}"]`);
+                    if (container) {
+                        container.style.border = "1px solid var(--danger)";
+                        container.style.borderRadius = "16px";
+                        container.style.padding = "4px";
+                    }
+                } else {
+                    const container = document.querySelector(`[data-target="${id}"]`);
+                    if (container) {
+                        container.style.border = "none";
+                        container.style.padding = "0";
+                    }
+                }
+            });
+
+            if (missingField) {
+                e.preventDefault();
+                alert("Please select a score for all tracking parameters before saving.");
+            }
+        });
+    });
+</script>
 {% endblock %}

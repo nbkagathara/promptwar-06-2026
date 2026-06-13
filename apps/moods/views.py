@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -24,7 +25,14 @@ class LogMoodView(LoginRequiredMixin, FormView):
             sleep_quality=int(cleaned["sleep_quality"]),
             study_satisfaction=int(cleaned["study_satisfaction"]),
         )
+        messages.success(self.request, "Daily wellness parameters saved successfully!")
         return super().form_valid(form)
+
+
+    def form_invalid(self, form):
+        print("DEBUG MOOD FORM ERRORS:", form.errors)
+        return super().form_invalid(form)
+
 
 
 class MoodHistoryView(LoginRequiredMixin, ListView):

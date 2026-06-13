@@ -19,21 +19,20 @@ class MoodService:
         Logs or updates daily mood parameters.
         """
         if not date_logged:
-            date_logged = timezone.now().date()
+            date_logged = timezone.localdate()
 
-        # Update if exists, otherwise create
-        mood_log, created = MoodLog.objects.update_or_create(
+
+        # Create new mood log record (allowing multiple logs per day)
+        mood_log = MoodLog.objects.create(
             user=user,
             logged_date=date_logged,
-            defaults={
-                "mood_score": mood_score,
-                "stress_score": stress_score,
-                "energy_level": energy_level,
-                "sleep_quality": sleep_quality,
-                "study_satisfaction": study_satisfaction,
-            },
+            mood_score=mood_score,
+            stress_score=stress_score,
+            energy_level=energy_level,
+            sleep_quality=sleep_quality,
+            study_satisfaction=study_satisfaction,
         )
 
-        action_msg = "Created daily mood log" if created else "Updated daily mood log"
-        AuditLog.objects.create(user=user, action=f"{action_msg} for date: {date_logged}")
+        AuditLog.objects.create(user=user, action=f"Created mood log for date: {date_logged}")
         return mood_log
+

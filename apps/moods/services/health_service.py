@@ -175,7 +175,8 @@ class HealthService:
 
         log, created = HealthDataLog.objects.update_or_create(
             user=user,
-            logged_date=timezone.now().date(),
+            logged_date=timezone.localdate(),
+
             defaults={
                 "steps": final_steps,
                 "active_minutes": final_active,
