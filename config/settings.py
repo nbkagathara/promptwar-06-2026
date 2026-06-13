@@ -24,6 +24,12 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-mental-wellness-tracker-
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[
+    "https://*.railway.app",
+    "https://*.up.railway.app",
+])
+
+
 # Installed Applications
 INSTALLED_APPS = [
     "django.contrib.admin",
