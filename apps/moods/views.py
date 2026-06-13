@@ -12,7 +12,8 @@ from apps.moods.services.mood_service import MoodService
 class LogMoodView(LoginRequiredMixin, FormView):
     template_name = "apps/moods/log_mood.html"
     form_class = MoodLogForm
-    success_url = reverse_lazy("dashboard")
+    success_url = reverse_lazy("mood_history")
+
 
     def form_valid(self, form):
         cleaned = form.cleaned_data
