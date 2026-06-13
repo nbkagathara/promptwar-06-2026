@@ -14,7 +14,6 @@ class LogMoodView(LoginRequiredMixin, FormView):
     form_class = MoodLogForm
     success_url = reverse_lazy("mood_history")
 
-
     def form_valid(self, form):
         cleaned = form.cleaned_data
         MoodService.log_daily_mood(

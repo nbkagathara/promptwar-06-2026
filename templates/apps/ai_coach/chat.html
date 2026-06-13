@@ -1,0 +1,254 @@
+{% extends "layout.html" %}
+
+{% block title %}Digital Wellness Companion - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="max-w-4xl mx-auto animated-fade">
+
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="h3 mb-1 fw-bold"><i class="bi bi-chat-dots text-primary"></i> Digital Companion</h2>
+            <p class="text-secondary mb-0">Your empathetic, always-available digital wellness companion. Ask for coping strategies, quick study breaks, and motivation.</p>
+        </div>
+        <a href="{% url 'crisis_support' %}" class="btn btn-outline-danger px-3 py-2 btn-sm fw-bold border-2" style="border-radius: 12px;">
+            <i class="bi bi-telephone-fill"></i> Urgent Help
+        </a>
+    </div>
+
+    <!-- Main Chat Window Card -->
+    <div class="glass-card p-0 d-flex flex-column" style="height: 600px; overflow: hidden; border-radius: 24px;">
+        
+        <!-- Companion Top Header Status -->
+        <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between" style="background: rgba(255,255,255,0.3); border-color: var(--border-color) !important;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="position-relative">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 48px; height: 48px; font-size: 1.4rem; background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <span class="position-absolute bottom-0 end-0 translate-middle p-1 bg-success border border-light rounded-circle" style="width: 12px; height: 12px;"></span>
+                </div>
+                <div>
+                    <h5 class="mb-0 fw-bold fs-6">AuraWell Guide</h5>
+                    <span class="text-success small fw-semibold">Always Available</span>
+                </div>
+            </div>
+            <div class="text-muted small">
+                Empathetic Coaching AI
+            </div>
+        </div>
+
+        <!-- Chat Bubble Log Container -->
+        <div id="chat-messages-container" class="flex-grow-1 p-4" style="overflow-y: auto; background: rgba(248, 250, 252, 0.4);">
+            
+            {% if chat_messages %}
+                <div class="d-flex flex-column gap-3">
+                    {% for msg in chat_messages %}
+                        {% if msg.role == 'user' %}
+                            <!-- User Message -->
+                            <div class="d-flex justify-content-end animated-fade">
+                                <div class="p-3 shadow-sm text-white" style="max-width: 75%; border-radius: 20px 20px 0 20px; background: linear-gradient(135deg, var(--primary), var(--primary-hover));">
+                                    <p class="mb-1 small" style="line-height: 1.5; white-space: pre-line;">{{ msg.content }}</p>
+                                    <div class="text-end small opacity-75" style="font-size: 0.7rem;">{{ msg.created_at|date:"h:i A" }}</div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Assistant/Coach Message -->
+                            <div class="d-flex justify-content-start animated-fade">
+                                <div class="p-3 border shadow-sm" style="max-width: 75%; border-radius: 20px 20px 20px 0; background: var(--bg-card); border-color: var(--border-color) !important;">
+                                    <p class="mb-1 text-primary-custom small fw-bold"><i class="bi bi-robot"></i> Companion</p>
+                                    <p class="mb-1 text-secondary small" style="line-height: 1.6; white-space: pre-line;">{{ msg.content }}</p>
+                                    <div class="text-muted small" style="font-size: 0.7rem;">{{ msg.created_at|date:"h:i A" }}</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- Empty State Chat -->
+                <div id="chat-empty-state" class="text-center py-5">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-chat-left-heart display-5 text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">Start a Wellness Conversation</h4>
+                    <p class="text-secondary small max-w-md mx-auto mb-4" style="max-width: 450px;">
+                        Talk to me about exam anxiety, stress triggers, study schedules, or ask for mindfulness guidance. I'm here to support you.
+                    </p>
+                    
+                    <div class="d-flex flex-wrap gap-2 justify-content-center" style="max-width: 500px; margin: 0 auto;">
+                        <button class="btn btn-secondary-custom btn-sm text-start py-2 px-3 fw-normal quick-prompt-btn" style="border-radius: 12px; font-size: 0.85rem;" data-prompt="I am feeling overwhelmed with my study plan today.">
+                            🤯 Overwhelmed with study plan
+                        </button>
+                        <button class="btn btn-secondary-custom btn-sm text-start py-2 px-3 fw-normal quick-prompt-btn" style="border-radius: 12px; font-size: 0.85rem;" data-prompt="Can you guide me through a 5-minute breathing exercise to help focus?">
+                            🧘 5-minute breathing exercise
+                        </button>
+                        <button class="btn btn-secondary-custom btn-sm text-start py-2 px-3 fw-normal quick-prompt-btn" style="border-radius: 12px; font-size: 0.85rem;" data-prompt="I did poorly on my mock test and feel self-doubt.">
+                            📉 Self-doubt from mock test
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div id="chat-typing-indicator" class="d-none justify-content-start animated-fade my-3">
+                <div class="p-3 border shadow-sm d-flex align-items-center gap-2" style="border-radius: 20px 20px 20px 0; background: var(--bg-card); border-color: var(--border-color) !important;">
+                    <div class="spinner-grow spinner-grow-sm text-primary" role="status"></div>
+                    <div class="spinner-grow spinner-grow-sm text-secondary" role="status"></div>
+                    <span class="text-secondary small">Empathetic coach is typing...</span>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="p-3 border-top" style="background: rgba(255, 255, 255, 0.5); border-color: var(--border-color) !important;">
+            <form id="chat-input-form" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="text" id="chat-message-input" class="form-control-custom py-2.5 px-3 border-0 flex-grow-1" placeholder="Type a message, ask for mindfulness tips or support..." style="border-radius: 16px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);" required autocomplete="off">
+                <button type="submit" class="btn-primary-custom px-4 py-2 border-0 d-flex align-items-center gap-2" style="border-radius: 16px;">
+                    <span>Send</span> <i class="bi bi-send-fill"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const messagesContainer = document.getElementById("chat-messages-container");
+        const chatForm = document.getElementById("chat-input-form");
+        const messageInput = document.getElementById("chat-message-input");
+        const emptyState = document.getElementById("chat-empty-state");
+        const typingIndicator = document.getElementById("chat-typing-indicator");
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Auto Scroll to Bottom
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        scrollToBottom();
+
+        // Handle Quick Prompts click
+        document.querySelectorAll(".quick-prompt-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                messageInput.value = this.getAttribute("data-prompt");
+                chatForm.dispatchEvent(new Event("submit"));
+            });
+        });
+
+        // Submit Chat Form via AJAX
+        chatForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const messageText = messageInput.value.trim();
+            if (!messageText) return;
+
+            // Clear Input
+            messageInput.value = "";
+
+            // Hide empty state if visible
+            if (emptyState) {
+                emptyState.style.display = "none";
+            }
+
+            // Append User Message to UI
+            let listWrapper = messagesContainer.querySelector(".d-flex.flex-column.gap-3");
+            if (!listWrapper) {
+                listWrapper = document.createElement("div");
+                listWrapper.className = "d-flex flex-column gap-3";
+                messagesContainer.prepend(listWrapper);
+            }
+
+            const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            const userMsgHtml = `
+                <div class="d-flex justify-content-end animated-fade">
+                    <div class="p-3 shadow-sm text-white" style="max-width: 75%; border-radius: 20px 20px 0 20px; background: linear-gradient(135deg, var(--primary), var(--primary-hover));">
+                        <p class="mb-1 small" style="line-height: 1.5; white-space: pre-line;">${escapeHtml(messageText)}</p>
+                        <div class="text-end small opacity-75" style="font-size: 0.7rem;">${nowTime}</div>
+                    </div>
+                </div>
+            `;
+            listWrapper.insertAdjacentHTML("beforeend", userMsgHtml);
+            scrollToBottom();
+
+            // Show Typing Indicator
+            typingIndicator.classList.remove("d-none");
+            scrollToBottom();
+
+            // Send AJAX Post request
+            fetch("{% url 'coach_chat' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken,
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({ message: messageText })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Server error responding to message");
+                return res.json();
+            })
+            .then(data => {
+                // Hide Typing Indicator
+                typingIndicator.classList.add("d-none");
+
+                // Check safety escalation and alert/redirect
+                if (data.safety_escalation) {
+                    // Inject warning banner into messages log
+                    const alertHtml = `
+                        <div class="alert alert-danger border-0 shadow-sm text-start animated-fade my-2" style="border-radius: 16px;">
+                            <strong class="h6"><i class="bi bi-exclamation-triangle-fill"></i> Safety Alert:</strong>
+                            <p class="mb-2 small text-secondary">A safety warning has been recorded. Please reach out for professional human assistance if you are struggling with self-harm or deep depression.</p>
+                            <a href="{% url 'crisis_support' %}" class="btn btn-danger btn-sm px-3 fw-bold" style="border-radius: 8px;">View Crisis Resources</a>
+                        </div>
+                    `;
+                    listWrapper.insertAdjacentHTML("beforeend", alertHtml);
+                }
+
+                // Append Assistant Message
+                const assistantMsgHtml = `
+                    <div class="d-flex justify-content-start animated-fade">
+                        <div class="p-3 border shadow-sm" style="max-width: 75%; border-radius: 20px 20px 20px 0; background: var(--bg-card); border-color: var(--border-color) !important;">
+                            <p class="mb-1 text-primary-custom small fw-bold"><i class="bi bi-robot"></i> Companion</p>
+                            <p class="mb-1 text-secondary small" style="line-height: 1.6; white-space: pre-line;">${escapeHtml(data.assistant_message.content)}</p>
+                            <div class="text-muted small" style="font-size: 0.7rem;">${data.assistant_message.created_at}</div>
+                        </div>
+                    </div>
+                `;
+                listWrapper.insertAdjacentHTML("beforeend", assistantMsgHtml);
+                scrollToBottom();
+            })
+            .catch(err => {
+                typingIndicator.classList.add("d-none");
+                const errorHtml = `
+                    <div class="d-flex justify-content-start animated-fade">
+                        <div class="p-3 border border-danger shadow-sm bg-light-danger" style="max-width: 75%; border-radius: 20px 20px 20px 0;">
+                            <p class="mb-1 text-danger small fw-bold"><i class="bi bi-exclamation-circle-fill"></i> Error</p>
+                            <p class="mb-0 text-danger small">Failed to receive response from companion. Please try again.</p>
+                        </div>
+                    </div>
+                `;
+                listWrapper.insertAdjacentHTML("beforeend", errorHtml);
+                scrollToBottom();
+                console.error(err);
+            });
+        });
+
+        // Helper to escape HTML characters
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    });
+</script>
+{% endblock %}

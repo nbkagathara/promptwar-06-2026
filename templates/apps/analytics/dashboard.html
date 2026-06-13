@@ -18,6 +18,40 @@
         </div>
     </div>
 
+    <!-- Wearable Device Connections Status Banner -->
+    <div class="glass-card mb-4 p-4 d-flex justify-content-between align-items-center flex-wrap gap-3" style="border-left: 5px solid var(--bs-primary); border-radius: 16px;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="p-3 bg-primary-subtle text-primary rounded-4 d-flex align-items-center justify-content-center animate-pulse" style="width: 54px; height: 54px; min-width: 54px;">
+                <i class="bi bi-link-45deg fs-3"></i>
+            </div>
+            <div>
+                <h4 class="h5 fw-bold mb-1">Health Integrations & Device Connections</h4>
+                <p class="text-secondary small mb-0">
+                    {% if detailed_health.any_connected %}
+                        Connected platforms: 
+                        {% for platform, connected in detailed_health.integrations.items %}
+                            {% if connected %}
+                                <span class="badge bg-success-subtle text-success px-2.5 py-1.5 rounded-pill ms-1" style="font-size: 0.8rem;">
+                                    {% if platform == 'google_fit' %}<i class="bi bi-google"></i> Google Fit
+                                    {% elif platform == 'apple_health' %}<i class="bi bi-apple"></i> Apple Health
+                                    {% elif platform == 'fitbit' %}<i class="bi bi-heart-pulse-fill"></i> Fitbit
+                                    {% else %}<i class="bi bi-watch"></i> Smart Band{% endif %}
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill me-1"></i> No health platforms connected. Connect iOS or Android health app to sync biometric metrics.</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div>
+            <a href="{% url 'health_integrations' %}" class="btn btn-primary-custom btn-sm px-4 py-2" style="border-radius: 10px;">
+                <i class="bi bi-gear-fill me-2"></i> Manage Connections
+            </a>
+        </div>
+    </div>
+
     <!-- Wellness Warning Alerts / Early indicators -->
     {% if wellness.warnings %}
         <div class="mb-4">
@@ -118,6 +152,131 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Detailed Biometrics Section -->
+    <div class="glass-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h4 class="h5 fw-bold mb-1"><i class="bi bi-activity text-primary me-2"></i> Comprehensive Sync Biometrics</h4>
+                <p class="text-secondary small mb-0">
+                    {% if detailed_health.latest_log %}
+                        Latest metrics synchronized on {{ detailed_health.latest_log.logged_date }} via <strong>{{ detailed_health.latest_log.source }}</strong>.
+                    {% else %}
+                        No device synchronization logs detected.
+                    {% endif %}
+                </p>
+            </div>
+            {% if not detailed_health.any_connected %}
+                <a href="{% url 'health_integrations' %}" class="btn btn-sm btn-outline-primary" style="border-radius: 8px;">
+                    <i class="bi bi-plus-circle me-1"></i> Connect Device
+                </a>
+            {% endif %}
+        </div>
+
+        {% if detailed_health.latest_log %}
+            <div class="row g-3">
+                <!-- Activity Section -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-4 h-100" style="background: rgba(99, 102, 241, 0.03); border: 1px solid rgba(99, 102, 241, 0.08);">
+                        <h6 class="fw-bold mb-3 text-primary d-flex align-items-center gap-2">
+                            <i class="bi bi-lightning-charge-fill"></i> Activity & Energy
+                        </h6>
+                        <div class="d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Daily Steps</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.steps|default:"0" }} steps</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Active Minutes</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.active_minutes|default:"0" }} mins</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Calories Burned</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.calories_burned|default:"0" }} kcal</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Exercise Sessions</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.exercise_sessions_count|default:"0" }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5">
+                                <span class="text-secondary">Workout Duration</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.exercise_duration_minutes|default:"0" }} mins</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vitals Section -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-4 h-100" style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.08);">
+                        <h6 class="fw-bold mb-3 text-danger d-flex align-items-center gap-2">
+                            <i class="bi bi-heart-pulse-fill"></i> Cardiovascular Vitals
+                        </h6>
+                        <div class="d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Resting Heart Rate</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.resting_heart_rate|default:"0" }} bpm</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Average Heart Rate</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.avg_heart_rate|default:"0" }} bpm</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5">
+                                <span class="text-secondary">Maximum Heart Rate</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.max_heart_rate|default:"0" }} bpm</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sleep, Body & Mind -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-4 h-100" style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.08);">
+                        <h6 class="fw-bold mb-3 text-success d-flex align-items-center gap-2">
+                            <i class="bi bi-moon-stars-fill"></i> Sleep, Body & Mind
+                        </h6>
+                        <div class="d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Sleep Duration</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.sleep_hours|default:"0.0" }} hrs</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Sleep Quality Score</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.sleep_quality_score|default:"0" }}/100</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Weight & BMI</span>
+                                <strong class="text-dark">
+                                    {% if detailed_health.latest_log.weight_kg %}
+                                        {{ detailed_health.latest_log.weight_kg }} kg (BMI: {{ detailed_health.latest_log.bmi }})
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5 border-bottom border-light">
+                                <span class="text-secondary">Device Stress Level</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.stress_level_score|default:"0" }}/100</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1.5">
+                                <span class="text-secondary">Mindfulness Minutes</span>
+                                <strong class="text-dark">{{ detailed_health.latest_log.mindfulness_minutes|default:"0" }} mins</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="text-muted mb-3"><i class="bi bi-device-ssd fs-1"></i></div>
+                <h5 class="fw-bold mb-1">No Active Health Logs</h5>
+                <p class="text-secondary small mb-3">Sync a wearable device or use the sandbox simulator on the Integrations page to see metrics.</p>
+                <a href="{% url 'health_integrations' %}" class="btn btn-sm btn-outline-primary px-4 py-2" style="border-radius: 10px;">
+                    Go to Sync Settings
+                </a>
+            </div>
+        {% endif %}
     </div>
 
     <!-- Energy vs Satisfaction -->

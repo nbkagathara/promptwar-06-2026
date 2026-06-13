@@ -17,7 +17,7 @@ class Command(BaseCommand):
         for user in users:
             # 1. Check if mood is logged today
             mood_logged = MoodLog.objects.filter(user=user, logged_date=today).exists()
-            
+
             # 2. Check if journal is logged today
             journal_logged = JournalEntry.objects.filter(
                 user=user, created_at__date=today

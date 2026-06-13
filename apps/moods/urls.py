@@ -16,4 +16,3 @@ urlpatterns = [
     path("oauth/callback/", OAuthCallbackView.as_view(), name="health_oauth_callback"),
     path("delete-data/", DeleteHealthDataView.as_view(), name="delete_health_data"),
 ]
-

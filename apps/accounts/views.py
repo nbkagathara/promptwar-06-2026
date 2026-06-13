@@ -59,7 +59,7 @@ class RegisterView(FormView):
 
         # Log user in
         login(self.request, user)
-        
+
         AuditLog.objects.create(
             user=user,
             action="New user registration and auto-login",

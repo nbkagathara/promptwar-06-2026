@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from apps.accounts.models import Profile, ExamType
+from apps.accounts.models import ExamType
 
 
 class RegistrationForm(forms.ModelForm):

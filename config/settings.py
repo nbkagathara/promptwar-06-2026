@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
+
     # Custom Apps
     "apps.accounts",
     "apps.dashboard",
@@ -181,3 +181,13 @@ GEMINI_API_KEY = env("GEMINI_API_KEY")
 GEMINI_MODEL = env("GEMINI_MODEL")
 AZURE_OPENAI_API_KEY = env("AZURE_OPENAI_API_KEY")
 AZURE_OPENAI_ENDPOINT = env("AZURE_OPENAI_ENDPOINT")
+
+# Production Security Headers (Active when DEBUG = False)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+

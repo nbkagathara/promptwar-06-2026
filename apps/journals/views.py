@@ -1,12 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views import View
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView
 from apps.journals.forms import JournalEntryForm
-from apps.journals.models import JournalEntry, AIAnalysis
+from apps.journals.models import JournalEntry
 from apps.journals.services.journal_service import JournalService
 
 
@@ -17,7 +16,7 @@ class WriteJournalView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         content = form.cleaned_data["content"]
-        
+
         # Service layer handles saving, safety analysis, and AI analysis
         entry, safety_level, alert = JournalService.create_and_analyze_journal(
             self.request.user, content

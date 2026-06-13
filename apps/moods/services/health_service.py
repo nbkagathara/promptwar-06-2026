@@ -61,17 +61,17 @@ class HealthService:
         - Stress Level: 20 points max (lower stress = higher points)
         """
         score = 0
-        
+
         # 1. Steps (up to 25 pts)
         step_pts = min(25, int((log.steps / 8000.0) * 25)) if log.steps else 0
         score += step_pts
-        
+
         # 2. Sleep (up to 25 pts)
         sleep_ratio = min(1.0, log.sleep_hours / 7.5) if log.sleep_hours else 0.0
         quality_ratio = min(1.0, log.sleep_quality_score / 100.0) if log.sleep_quality_score else 0.0
         sleep_pts = int((sleep_ratio * 15) + (quality_ratio * 10))
         score += sleep_pts
-        
+
         # 3. Resting HR (up to 15 pts)
         # Ideal: 60 - 75. Over 90 or under 45 is poor.
         hr = log.resting_heart_rate
@@ -84,11 +84,11 @@ class HealthService:
                 score += 5
         else:
             score += 10
-            
+
         # 4. Active Minutes (up to 15 pts)
         active_pts = min(15, int((log.active_minutes / 30.0) * 15)) if log.active_minutes else 0
         score += active_pts
-        
+
         # 5. Stress Level (up to 20 pts)
         # Lower stress = higher points
         stress = log.stress_level_score
@@ -97,7 +97,7 @@ class HealthService:
             score += stress_pts
         else:
             score += 12
-            
+
         return min(100, max(0, score))
 
     @staticmethod
@@ -109,7 +109,7 @@ class HealthService:
         integration.is_connected = True
         integration.connected_at = timezone.now()
         integration.save()
-        
+
         # Determine values based on profile_type
         if profile_type == "active_healthy":
             steps = random.randint(8500, 14000)
@@ -194,7 +194,7 @@ class HealthService:
                 "source": platform,
             }
         )
-        
+
         AuditLog.objects.create(
             user=user,
             action=f"Synced metrics from {platform} with profile '{profile_type}'"

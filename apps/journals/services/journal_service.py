@@ -18,7 +18,7 @@ class JournalService:
         """
         # 1. Create journal entry
         entry = JournalEntry.objects.create(user=user, content=content)
-        
+
         # 2. Run safety engine
         safety_res = SafetyEngine.analyze_safety(content)
         safety_level = safety_res["safety_level"]
@@ -40,7 +40,7 @@ class JournalService:
                 action=f"CRITICAL SAFETY ALERT TRIGGERED: Detected terms '{detected_terms}' in journal entry {entry.id}",
             )
             logger.warning(f"Critical safety escalation for user {user.username} (Entry ID: {entry.id})")
-            
+
             # Immediately add an emergency local notification/recommendation to check safety resources
             AIRecommendation.objects.create(
                 user=user,
@@ -78,7 +78,7 @@ class JournalService:
                 motivation_trends=analysis_data.get("motivation_trends", []),
                 summary=analysis_data.get("summary", ""),
             )
-            
+
             # Generate fresh personalized recommendations based on new entry
             cls_coach = CoachServiceHelper
             cls_coach.generate_personalized_recommendations(user)

@@ -16,7 +16,7 @@ class LandingView(TemplateView):
 class MainDashboardView(LoginRequiredMixin, View):
     def get(self, request):
         user = request.user
-        
+
         # 1. Check if user has an unresolved critical safety alert
         active_crisis = SafetyService.get_active_crisis_alert(user)
 
@@ -63,5 +63,6 @@ class CrisisSupportView(View):
     """
     Dedicated safe view displaying emergency mental health hotlines and resources.
     """
+
     def get(self, request):
         return render(request, "apps/dashboard/crisis_support.html")

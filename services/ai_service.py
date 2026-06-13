@@ -116,11 +116,42 @@ class AIService:
         return json.loads(response.choices[0].message.content.strip())
 
     @classmethod
+    def _resolve_gemini_model(cls, model_name: str) -> str:
+        import google.generativeai as genai
+        try:
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            available = [m.name for m in genai.list_models()]
+            target = model_name if model_name.startswith("models/") else f"models/{model_name}"
+            if target in available:
+                return target
+            
+            alternatives = [
+                "models/gemini-3.5-flash",
+                "models/gemini-2.5-flash",
+                "models/gemini-2.0-flash",
+                "models/gemini-flash-latest",
+            ]
+            for alt in alternatives:
+                if alt in available:
+                    logger.info(f"Model {target} not available. Mapping to {alt}.")
+                    return alt
+            
+            for m in available:
+                if "flash" in m.lower():
+                    logger.info(f"Model {target} not available. Mapping to {m}.")
+                    return m
+            return target
+        except Exception as e:
+            logger.warning(f"Error listing gemini models: {str(e)}")
+            return model_name if model_name.startswith("models/") else f"models/{model_name}"
+
+    @classmethod
     def _call_gemini(cls, prompt: str) -> dict:
         import google.generativeai as genai
         genai.configure(api_key=settings.GEMINI_API_KEY)
         model_name = getattr(settings, "GEMINI_MODEL", "gemini-1.5-flash")
-        model = genai.GenerativeModel(model_name)
+        model_resolved = cls._resolve_gemini_model(model_name)
+        model = genai.GenerativeModel(model_resolved)
         response = model.generate_content(prompt)
         # Handle simple markdown cleanup if returned
         text = response.text.strip()
@@ -187,10 +218,10 @@ class AIService:
     @classmethod
     def _mock_coach_guidance(cls, profile_info: dict, recent_journals: list = None, health_history: list = None) -> dict:
         exam_name = profile_info.get("exam_name", "your upcoming exam")
-        
+
         # Analyze recent journals content dynamically for mock output
         journal_text = " ".join(recent_journals or []).lower()
-        
+
         # Analyze health history dynamically for mock output
         latest_steps = 8000
         latest_sleep = 7.5
@@ -240,3 +271,102 @@ class AIService:
                 },
             ]
         }
+
+    @classmethod
+    def generate_chat_response(cls, system_prompt: str, chat_history: list) -> str:
+        """
+        Generates an empathetic chat response from the configured AI provider.
+        """
+        provider = cls.get_provider()
+        try:
+            if provider == "openai" and getattr(settings, "OPENAI_API_KEY", ""):
+                return cls._call_openai_chat(system_prompt, chat_history)
+            elif provider == "gemini" and getattr(settings, "GEMINI_API_KEY", ""):
+                return cls._call_gemini_chat(system_prompt, chat_history)
+            elif provider == "azure" and getattr(settings, "AZURE_OPENAI_API_KEY", ""):
+                return cls._call_azure_chat(system_prompt, chat_history)
+        except Exception as e:
+            logger.error(f"Error calling AI chat provider {provider}: {str(e)}")
+
+        return cls._mock_chat_response(chat_history)
+
+    @classmethod
+    def _call_openai_chat(cls, system_prompt: str, chat_history: list) -> str:
+        from openai import OpenAI
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        messages = [{"role": "system", "content": system_prompt}] + chat_history
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            temperature=0.7,
+        )
+        return response.choices[0].message.content.strip()
+
+    @classmethod
+    def _call_gemini_chat(cls, system_prompt: str, chat_history: list) -> str:
+        import google.generativeai as genai
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model_name = getattr(settings, "GEMINI_MODEL", "gemini-1.5-flash")
+        model_resolved = cls._resolve_gemini_model(model_name)
+        model = genai.GenerativeModel(model_resolved)
+        
+        prompt = f"System Instruction:\n{system_prompt}\n\n"
+        for msg in chat_history:
+            role = "Student" if msg["role"] == "user" else "Companion"
+            prompt += f"{role}: {msg['content']}\n"
+        prompt += "Companion:"
+        
+        response = model.generate_content(prompt)
+        return response.text.strip()
+
+    @classmethod
+    def _call_azure_chat(cls, system_prompt: str, chat_history: list) -> str:
+        import requests
+        headers = {
+            "Content-Type": "application/json",
+            "api-key": settings.AZURE_OPENAI_API_KEY,
+        }
+        messages = [{"role": "system", "content": system_prompt}] + chat_history
+        data = {
+            "messages": messages,
+            "temperature": 0.7,
+        }
+        url = f"{settings.AZURE_OPENAI_ENDPOINT}/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-05-15"
+        res = requests.post(url, headers=headers, json=data, timeout=10)
+        res.raise_for_status()
+        res_json = res.json()
+        return res_json["choices"][0]["message"]["content"].strip()
+
+    @classmethod
+    def _mock_chat_response(cls, chat_history: list) -> str:
+        last_message = chat_history[-1]["content"].lower() if chat_history else ""
+        if "stressed" in last_message or "pressure" in last_message or "exam" in last_message or "neet" in last_message or "jee" in last_message or "upsc" in last_message or "gate" in last_message or "cat" in last_message or "study" in last_message:
+            return (
+                "I completely understand. High-stakes exam preparation can feel like an immense weight. "
+                "Remember, it's a marathon, not a sprint. To help manage this pressure right now, let's try a quick grounding exercise: "
+                "breathe in deeply for 4 seconds, hold for 4, and release for 4. Focus on this moment. You are doing the best you can."
+            )
+        elif "tired" in last_message or "sleep" in last_message or "exhausted" in last_message or "burnout" in last_message:
+            return (
+                "Your physical health is critical for your academic performance. Burning the midnight oil might feel productive, "
+                "but sleep consolidation is when your brain actually stores information. "
+                "I recommend taking a 15-minute study break right now to walk around or stretch. "
+                "Make sure you aim for 7.5+ hours of sleep tonight to perform your best."
+            )
+        elif "anxious" in last_message or "scared" in last_message or "fail" in last_message or "worry" in last_message:
+            return (
+                "It's completely normal to feel anxious about the outcome, but try to focus on the process rather than the destination. "
+                "A study day that didn't go well is simply feedback, not a definition of your intelligence or final exam score. "
+                "You have shown incredible persistence, and you are building resilience. Be kind to yourself today."
+            )
+        elif "hello" in last_message or "hi" in last_message or "hey" in last_message:
+            return (
+                "Hello! I am your wellness companion. I'm here to support you through your prep journey. "
+                "How are you feeling today, and how is your preparation going?"
+            )
+        else:
+            return (
+                "I hear you, and I am here for you. Study stress is very real, and you don't have to carry it alone. "
+                "Let's focus on taking small, manageable steps today. What is one area or topic where you're feeling a bit stuck or overwhelmed right now?"
+            )
+

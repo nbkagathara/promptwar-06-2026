@@ -10,11 +10,12 @@ class AnalyticsDashboardView(LoginRequiredMixin, View):
         days = int(request.GET.get("days", 7))
         trends = AnalyticsService.get_mood_trends(request.user, days=days)
         metrics = AnalyticsService.get_summary_metrics(request.user)
-        
+
         # New health trends & wellness score summary
         health_trends = AnalyticsService.get_health_trends(request.user, days=days)
         wellness = AnalyticsService.get_wellness_summary(request.user)
-        
+        detailed_health = AnalyticsService.get_detailed_health_metrics(request.user)
+
         # Admin cohort-level analytics
         cohort = None
         if request.user.is_staff:
@@ -27,6 +28,7 @@ class AnalyticsDashboardView(LoginRequiredMixin, View):
             "cohort": cohort,
             "trends_json": json.dumps(trends),
             "health_json": json.dumps(health_trends),
+            "detailed_health": detailed_health,
         }
-        return render(request, "apps/analytics/dashboard.html", context)
 
+        return render(request, "apps/analytics/dashboard.html", context)

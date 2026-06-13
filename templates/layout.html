@@ -32,6 +32,9 @@
             <a href="{% url 'coach_guidance' %}" class="nav-link-item {% if request.resolver_match.url_name == 'coach_guidance' %}active{% endif %}">
                 <i class="bi bi-chat-heart-fill"></i> AI Coach
             </a>
+            <a href="{% url 'coach_chat' %}" class="nav-link-item {% if request.resolver_match.url_name == 'coach_chat' %}active{% endif %}">
+                <i class="bi bi-chat-dots-fill"></i> Digital Companion
+            </a>
             <a href="{% url 'analytics_dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'analytics_dashboard' %}active{% endif %}">
                 <i class="bi bi-graph-up-arrow"></i> Analytics
             </a>

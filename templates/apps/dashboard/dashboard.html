@@ -86,7 +86,7 @@
                     <div class="progress mb-2" style="height: 6px; border-radius: 3px;">
                         <div class="progress-bar {% if analytics.burnout_risk == 'HIGH' %}bg-danger{% elif analytics.burnout_risk == 'MEDIUM' %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" 
                              style="width: {% if analytics.burnout_risk == 'HIGH' %}90%{% elif analytics.burnout_risk == 'MEDIUM' %}55%{% else %}15%{% endif %};" 
-                             aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                             aria-valuenow="{% if analytics.burnout_risk == 'HIGH' %}90{% elif analytics.burnout_risk == 'MEDIUM' %}55{% else %}15{% endif %}" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     <p class="text-secondary small mb-0" style="font-size: 0.75rem;">Based on your mood score, stress level, and sleep logs over the past 30 days.</p>
                 </div>

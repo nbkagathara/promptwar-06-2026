@@ -1,6 +1,6 @@
 from datetime import timedelta
 from django.contrib.auth.models import User
-from django.db.models import Avg, Count
+from django.db.models import Avg
 from django.utils import timezone
 from apps.moods.models import MoodLog
 from apps.journals.models import JournalEntry, AIAnalysis
@@ -177,22 +177,22 @@ class AnalyticsService:
         """
         from apps.moods.models import HealthDataLog
         from apps.moods.services.health_service import HealthService
-        
+
         today = timezone.now().date()
         past_7_days = today - timedelta(days=7)
-        
+
         logs_7 = HealthDataLog.objects.filter(user=user, logged_date__range=[past_7_days, today])
         count = logs_7.count()
-        
+
         avg_steps = logs_7.aggregate(avg=Avg("steps"))["avg"] or 0
         avg_sleep = logs_7.aggregate(avg=Avg("sleep_hours"))["avg"] or 0.0
         avg_hr = logs_7.aggregate(avg=Avg("resting_heart_rate"))["avg"] or 70
         avg_active = logs_7.aggregate(avg=Avg("active_minutes"))["avg"] or 0
-        
+
         # Calculate recent wellness score from the latest log
         latest_log = HealthDataLog.objects.filter(user=user).order_by("-logged_date").first()
         wellness_score = HealthService.calculate_wellness_score(latest_log) if latest_log else 0
-        
+
         # Warnings detection
         warnings = []
         if count > 0:
@@ -220,7 +220,7 @@ class AnalyticsService:
                 "text": "Connect your wearable or trigger a sync to generate wellness insights.",
                 "level": "info"
             })
-            
+
         return {
             "wellness_score": wellness_score,
             "avg_steps": round(avg_steps),
@@ -237,31 +237,31 @@ class AnalyticsService:
         """
         from apps.moods.models import HealthDataLog
         from apps.moods.services.health_service import HealthService
-        
+
         today = timezone.now().date()
         past_30_days = today - timedelta(days=30)
-        
+
         logs = HealthDataLog.objects.filter(logged_date__range=[past_30_days, today])
-        
+
         total_students_tracked = User.objects.filter(health_logs__isnull=False).distinct().count()
         avg_steps = logs.aggregate(avg=Avg("steps"))["avg"] or 0
         avg_sleep = logs.aggregate(avg=Avg("sleep_hours"))["avg"] or 0.0
         avg_hr = logs.aggregate(avg=Avg("resting_heart_rate"))["avg"] or 70
-        
+
         # Compute cohort wellness score average
         all_latest_logs = []
         users_with_logs = User.objects.filter(health_logs__isnull=False).distinct()
         for u in users_with_logs:
-            l = HealthDataLog.objects.filter(user=u).order_by("-logged_date").first()
-            if l:
-                all_latest_logs.append(HealthService.calculate_wellness_score(l))
-                
+            latest_log = HealthDataLog.objects.filter(user=u).order_by("-logged_date").first()
+            if latest_log:
+                all_latest_logs.append(HealthService.calculate_wellness_score(latest_log))
+
         cohort_wellness_score = int(sum(all_latest_logs) / len(all_latest_logs)) if all_latest_logs else 0
-        
+
         # Simple participation tracking
         total_users = User.objects.count()
         participation_rate = int((total_students_tracked / total_users) * 100) if total_users else 0
-        
+
         # Build distribution
         distribution = {
             "excellent": sum(1 for s in all_latest_logs if s >= 80),
@@ -269,7 +269,7 @@ class AnalyticsService:
             "fair": sum(1 for s in all_latest_logs if 40 <= s < 60),
             "risk": sum(1 for s in all_latest_logs if s < 40),
         }
-        
+
         return {
             "total_students_tracked": total_students_tracked,
             "avg_steps": round(avg_steps),
@@ -280,3 +280,24 @@ class AnalyticsService:
             "distribution": distribution,
         }
 
+    @classmethod
+    def get_detailed_health_metrics(cls, user: User) -> dict:
+        """
+        Retrieves the latest health metrics values and connection status of platforms.
+        """
+        from apps.moods.models import HealthDataLog, HealthIntegration
+
+        latest_log = HealthDataLog.objects.filter(user=user).order_by("-logged_date").first()
+
+        # Get connection status for platforms
+        platforms = ["google_fit", "apple_health", "fitbit", "smart_band"]
+        integrations = {
+            p: HealthIntegration.objects.filter(user=user, platform=p, is_connected=True).exists()
+            for p in platforms
+        }
+
+        return {
+            "latest_log": latest_log,
+            "integrations": integrations,
+            "any_connected": any(integrations.values())
+        }
