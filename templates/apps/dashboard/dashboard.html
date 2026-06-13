@@ -130,57 +130,89 @@
     <div class="glass-card mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div>
-                <h4 class="h5 fw-bold mb-1"><i class="bi bi-heart-pulse text-danger"></i> Connected Health Wearables (Apple Health / Google Fit)</h4>
-                <p class="text-secondary small mb-0">Synchronize your sleep, steps, and activity levels to allow context-aware AI wellness suggestions.</p>
+                <h4 class="h5 fw-bold mb-1"><i class="bi bi-heart-pulse text-danger"></i> Health Wearables & Biometrics Summary</h4>
+                <p class="text-secondary small mb-0">Track steps, heart rate, sleep quality, and active minutes. Manage privacy and permissions.</p>
             </div>
             <div class="d-flex gap-2">
+                <a href="{% url 'health_integrations' %}" class="btn btn-sm btn-outline-secondary px-3" style="border-radius: 10px;">
+                    <i class="bi bi-gear-fill"></i> Privacy & Integrations
+                </a>
                 <form action="{% url 'sync_health' %}" method="post">
                     {% csrf_token %}
                     <input type="hidden" name="source" value="Apple Health">
-                    <button type="submit" class="btn btn-sm btn-outline-primary" style="border-radius: 10px;">
-                        <i class="bi bi-apple"></i> Sync Apple Health
-                    </button>
-                </form>
-                <form action="{% url 'sync_health' %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="source" value="Google Fit">
-                    <button type="submit" class="btn btn-sm btn-outline-success" style="border-radius: 10px;">
-                        <i class="bi bi-google"></i> Sync Google Fit
+                    <input type="hidden" name="profile_type" value="active_healthy">
+                    <button type="submit" class="btn btn-sm btn-primary-custom px-3">
+                        <i class="bi bi-arrow-repeat"></i> Quick Sync
                     </button>
                 </form>
             </div>
         </div>
 
         {% if today_health %}
+            <!-- Wellness Score Header Alert -->
+            <div class="row align-items-center mb-3 g-3 p-3 mx-0 rounded-4" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);">
+                <div class="col-md-8">
+                    <h5 class="fw-bold mb-1"><i class="bi bi-award-fill text-warning"></i> Today's Wellness Score: <span class="text-primary">{{ wellness_score }}</span>/100</h5>
+                    <p class="text-secondary small mb-0">
+                        {% if wellness_score >= 80 %}
+                            Excellent! Keep up this amazing balance of rest and movement.
+                        {% elif wellness_score >= 60 %}
+                            Good progress. Try to hit your sleep and movement targets to push higher.
+                        {% else %}
+                            Wellness indicators are low. Focus on getting more rest and taking short active breaks.
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge {% if wellness_score >= 80 %}bg-success{% elif wellness_score >= 60 %}bg-warning{% else %}bg-danger{% endif %} text-white fs-6 py-2 px-3 rounded-pill">
+                        {% if wellness_score >= 80 %}Optimal Balance{% elif wellness_score >= 60 %}Moderate Wellness{% else %}Needs Focus{% endif %}
+                    </span>
+                </div>
+            </div>
+
             <div class="row g-3">
+                <!-- Steps & Active minutes -->
                 <div class="col-6 col-md-3">
-                    <div class="p-3 text-center" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px;">
-                        <span class="text-muted small d-block">TODAY'S STEPS</span>
-                        <strong class="fs-5 text-primary">{{ today_health.steps }}</strong>
+                    <div class="p-3 h-100" style="background: rgba(99, 102, 241, 0.04); border-radius: 12px; border-top: 3px solid var(--primary);">
+                        <span class="text-muted small d-block mb-1">ACTIVITY & STEPS</span>
+                        <strong class="fs-5 text-primary d-block">{{ today_health.steps }} steps</strong>
+                        <span class="text-secondary small" style="font-size: 0.75rem;">{{ today_health.active_minutes }} active mins</span>
                     </div>
                 </div>
+                <!-- Sleep Duration & quality -->
                 <div class="col-6 col-md-3">
-                    <div class="p-3 text-center" style="background: rgba(16, 185, 129, 0.04); border-radius: 12px;">
-                        <span class="text-muted small d-block">SLEEP DURATION</span>
-                        <strong class="fs-5 text-success">{{ today_health.sleep_hours }} hrs</strong>
+                    <div class="p-3 h-100" style="background: rgba(16, 185, 129, 0.04); border-radius: 12px; border-top: 3px solid var(--success);">
+                        <span class="text-muted small d-block mb-1">SLEEP STATUS</span>
+                        <strong class="fs-5 text-success d-block">{{ today_health.sleep_hours }} hours</strong>
+                        <span class="text-secondary small" style="font-size: 0.75rem;">Quality: {{ today_health.sleep_quality_score }}/100</span>
                     </div>
                 </div>
+                <!-- Heart Rate -->
                 <div class="col-6 col-md-3">
-                    <div class="p-3 text-center" style="background: rgba(239, 68, 68, 0.04); border-radius: 12px;">
-                        <span class="text-muted small d-block">RESTING HEART RATE</span>
-                        <strong class="fs-5 text-danger">{{ today_health.resting_heart_rate }} bpm</strong>
+                    <div class="p-3 h-100" style="background: rgba(239, 68, 68, 0.04); border-radius: 12px; border-top: 3px solid var(--danger);">
+                        <span class="text-muted small d-block mb-1">HEART RATE</span>
+                        <strong class="fs-5 text-danger d-block">{{ today_health.resting_heart_rate }} bpm (resting)</strong>
+                        <span class="text-secondary small" style="font-size: 0.75rem;">Avg: {{ today_health.avg_heart_rate }} | Max: {{ today_health.max_heart_rate }}</span>
                     </div>
                 </div>
+                <!-- Calories / Exercise / Weight / Stress -->
                 <div class="col-6 col-md-3">
-                    <div class="p-3 text-center" style="background: rgba(245, 158, 11, 0.04); border-radius: 12px;">
-                        <span class="text-muted small d-block">CONNECTION SOURCE</span>
-                        <strong class="fs-5 text-warning">{{ today_health.source }}</strong>
+                    <div class="p-3 h-100" style="background: rgba(245, 158, 11, 0.04); border-radius: 12px; border-top: 3px solid var(--warning);">
+                        <span class="text-muted small d-block mb-1">ENERGY & METRICS</span>
+                        <strong class="fs-5 text-warning d-block">{{ today_health.calories_burned }} kcal</strong>
+                        <span class="text-secondary small" style="font-size: 0.75rem;">{{ today_health.exercise_sessions_count }} workouts | BMI: {{ today_health.bmi }}</span>
                     </div>
                 </div>
             </div>
         {% else %}
-            <div class="alert alert-info py-2 px-3 small border-0 mb-0" style="border-radius: 10px;">
-                No wearable health data synced today. Click one of the buttons above to sync simulated Apple Health or Google Fit activity logs.
+            <div class="alert alert-info py-3 px-4 border-0 mb-0 rounded-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <h5 class="fw-bold mb-1 text-info-emphasis">No Health Data Synced Today</h5>
+                    <p class="text-secondary mb-0 small">Connect Google Fit, Fitbit, or Apple Health to enable automated fitness insights and AI coaching guidance.</p>
+                </div>
+                <a href="{% url 'health_integrations' %}" class="btn btn-info text-white px-4 py-2 small fw-bold" style="border-radius: 12px;">
+                    <i class="bi bi-link-45deg"></i> Connect Devices
+                </a>
             </div>
         {% endif %}
     </div>

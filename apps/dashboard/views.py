@@ -37,7 +37,12 @@ class MainDashboardView(LoginRequiredMixin, View):
 
         # 7. Fetch latest connected wearable health metrics
         from apps.moods.models import HealthDataLog
+        from apps.moods.services.health_service import HealthService
+        from apps.moods.models import HealthIntegration
+
         today_health = HealthDataLog.objects.filter(user=user).order_by("-logged_date").first()
+        wellness_score = HealthService.calculate_wellness_score(today_health) if today_health else 0
+        has_integrations = HealthIntegration.objects.filter(user=user, is_connected=True).exists()
 
         context = {
             "active_crisis": active_crisis,
@@ -47,7 +52,10 @@ class MainDashboardView(LoginRequiredMixin, View):
             "analytics": analytics_summary,
             "profile": profile,
             "today_health": today_health,
+            "wellness_score": wellness_score,
+            "has_integrations": has_integrations,
         }
+
         return render(request, "apps/dashboard/dashboard.html", context)
 
 

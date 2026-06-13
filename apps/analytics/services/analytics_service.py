@@ -119,3 +119,164 @@ class AnalyticsService:
             "avg_satisfaction": round(satisfaction_val, 1),
             "burnout_risk": burnout_risk,
         }
+
+    @staticmethod
+    def get_health_trends(user: User, days: int = 7) -> dict:
+        """
+        Retrieves health parameters (steps, heart rate, sleep hours, active minutes) for the past N days.
+        """
+        from apps.moods.models import HealthDataLog
+        end_date = timezone.now().date()
+        start_date = end_date - timedelta(days=days - 1)
+
+        logs = (
+            HealthDataLog.objects.filter(user=user, logged_date__range=[start_date, end_date])
+            .order_by("logged_date")
+        )
+
+        dates = []
+        steps = []
+        sleep_hours = []
+        sleep_quality = []
+        heart_rate = []
+        active_minutes = []
+
+        log_map = {log.logged_date: log for log in logs}
+
+        for i in range(days):
+            current_date = start_date + timedelta(days=i)
+            dates.append(current_date.strftime("%b %d"))
+
+            log = log_map.get(current_date)
+            if log:
+                steps.append(log.steps)
+                sleep_hours.append(log.sleep_hours)
+                sleep_quality.append(log.sleep_quality_score)
+                heart_rate.append(log.resting_heart_rate)
+                active_minutes.append(log.active_minutes)
+            else:
+                steps.append(None)
+                sleep_hours.append(None)
+                sleep_quality.append(None)
+                heart_rate.append(None)
+                active_minutes.append(None)
+
+        return {
+            "dates": dates,
+            "steps": steps,
+            "sleep_hours": sleep_hours,
+            "sleep_quality": sleep_quality,
+            "heart_rate": heart_rate,
+            "active_minutes": active_minutes,
+        }
+
+    @classmethod
+    def get_wellness_summary(cls, user: User) -> dict:
+        """
+        Retrieves a summary of wellness trends, detects warnings, and calculates an overall wellness score.
+        """
+        from apps.moods.models import HealthDataLog
+        from apps.moods.services.health_service import HealthService
+        
+        today = timezone.now().date()
+        past_7_days = today - timedelta(days=7)
+        
+        logs_7 = HealthDataLog.objects.filter(user=user, logged_date__range=[past_7_days, today])
+        count = logs_7.count()
+        
+        avg_steps = logs_7.aggregate(avg=Avg("steps"))["avg"] or 0
+        avg_sleep = logs_7.aggregate(avg=Avg("sleep_hours"))["avg"] or 0.0
+        avg_hr = logs_7.aggregate(avg=Avg("resting_heart_rate"))["avg"] or 70
+        avg_active = logs_7.aggregate(avg=Avg("active_minutes"))["avg"] or 0
+        
+        # Calculate recent wellness score from the latest log
+        latest_log = HealthDataLog.objects.filter(user=user).order_by("-logged_date").first()
+        wellness_score = HealthService.calculate_wellness_score(latest_log) if latest_log else 0
+        
+        # Warnings detection
+        warnings = []
+        if count > 0:
+            if avg_sleep < 6.0:
+                warnings.append({
+                    "title": "Sleep Deprivation Risk",
+                    "text": "Your average sleep over the last week is under 6 hours. Consider resting more to maintain memory retention.",
+                    "level": "danger"
+                })
+            if avg_steps < 4000:
+                warnings.append({
+                    "title": "Highly Sedentary Pattern",
+                    "text": "Average steps are below 4,000. Take short 10-minute active walking breaks during study sessions.",
+                    "level": "warning"
+                })
+            if avg_hr > 82:
+                warnings.append({
+                    "title": "Elevated Resting Heart Rate",
+                    "text": "Your resting heart rate is higher than average, potentially indicating stress. Try breathing exercises.",
+                    "level": "warning"
+                })
+        else:
+            warnings.append({
+                "title": "No Data Synced",
+                "text": "Connect your wearable or trigger a sync to generate wellness insights.",
+                "level": "info"
+            })
+            
+        return {
+            "wellness_score": wellness_score,
+            "avg_steps": round(avg_steps),
+            "avg_sleep": round(avg_sleep, 1),
+            "avg_hr": round(avg_hr),
+            "avg_active": round(avg_active),
+            "warnings": warnings,
+        }
+
+    @classmethod
+    def get_cohort_analytics(cls) -> dict:
+        """
+        Computes aggregate and anonymized wellness metrics for all students.
+        """
+        from apps.moods.models import HealthDataLog
+        from apps.moods.services.health_service import HealthService
+        
+        today = timezone.now().date()
+        past_30_days = today - timedelta(days=30)
+        
+        logs = HealthDataLog.objects.filter(logged_date__range=[past_30_days, today])
+        
+        total_students_tracked = User.objects.filter(health_logs__isnull=False).distinct().count()
+        avg_steps = logs.aggregate(avg=Avg("steps"))["avg"] or 0
+        avg_sleep = logs.aggregate(avg=Avg("sleep_hours"))["avg"] or 0.0
+        avg_hr = logs.aggregate(avg=Avg("resting_heart_rate"))["avg"] or 70
+        
+        # Compute cohort wellness score average
+        all_latest_logs = []
+        users_with_logs = User.objects.filter(health_logs__isnull=False).distinct()
+        for u in users_with_logs:
+            l = HealthDataLog.objects.filter(user=u).order_by("-logged_date").first()
+            if l:
+                all_latest_logs.append(HealthService.calculate_wellness_score(l))
+                
+        cohort_wellness_score = int(sum(all_latest_logs) / len(all_latest_logs)) if all_latest_logs else 0
+        
+        # Simple participation tracking
+        total_users = User.objects.count()
+        participation_rate = int((total_students_tracked / total_users) * 100) if total_users else 0
+        
+        # Build distribution
+        distribution = {
+            "excellent": sum(1 for s in all_latest_logs if s >= 80),
+            "good": sum(1 for s in all_latest_logs if 60 <= s < 80),
+            "fair": sum(1 for s in all_latest_logs if 40 <= s < 60),
+            "risk": sum(1 for s in all_latest_logs if s < 40),
+        }
+        
+        return {
+            "total_students_tracked": total_students_tracked,
+            "avg_steps": round(avg_steps),
+            "avg_sleep": round(avg_sleep, 1),
+            "avg_hr": round(avg_hr),
+            "cohort_wellness_score": cohort_wellness_score,
+            "participation_rate": participation_rate,
+            "distribution": distribution,
+        }
+

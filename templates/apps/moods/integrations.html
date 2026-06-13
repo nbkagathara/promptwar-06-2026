@@ -1,0 +1,283 @@
+{% extends "layout.html" %}
+
+{% block title %}Health Integrations & Privacy Settings - AuraWell{% endblock %}
+
+{% block main_content %}
+<div class="animated-fade">
+    <div class="mb-4">
+        <h1 class="h2 mb-1 fw-bold">Health Platform Integrations</h1>
+        <p class="text-secondary">Manage your connection with wearable devices, configure granular privacy consents, or remove synced data.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Platforms Grid -->
+        <div class="col-lg-8">
+            <!-- Google Fit Integration -->
+            <div class="glass-card mb-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div class="d-flex gap-3">
+                        <div class="p-3 bg-success-subtle text-success rounded-4 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-google fs-2"></i>
+                        </div>
+                        <div>
+                            <h4 class="h5 fw-bold mb-1">Google Fit</h4>
+                            <p class="text-secondary small mb-2">Sync activity, heart rate, sleep, and fitness records from Google Services.</p>
+                            {% if integrations.google_fit.is_connected %}
+                                <span class="badge bg-success-subtle text-success px-3 py-1.5 rounded-pill small"><i class="bi bi-patch-check-fill"></i> Connected</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary px-3 py-1.5 rounded-pill small">Not Connected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        {% if integrations.google_fit.is_connected %}
+                            <form action="{% url 'delete_health_data' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 10px;">Disconnect</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'health_oauth_callback' %}?platform=google_fit" class="btn btn-sm btn-primary-custom">Connect Account</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if integrations.google_fit.is_connected %}
+                <hr class="my-4">
+                <h5 class="small fw-bold text-uppercase text-muted mb-3">Granular Permissions</h5>
+                <form action="{% url 'health_integrations' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="platform" value="google_fit">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_steps" id="gf_steps" {% if integrations.google_fit.allow_steps %}checked{% endif %}>
+                                <label class="form-check-label small" for="gf_steps">Share Steps & Active Minutes</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_heart_rate" id="gf_hr" {% if integrations.google_fit.allow_heart_rate %}checked{% endif %}>
+                                <label class="form-check-label small" for="gf_hr">Share Resting & Daily Heart Rate</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_sleep" id="gf_sleep" {% if integrations.google_fit.allow_sleep %}checked{% endif %}>
+                                <label class="form-check-label small" for="gf_sleep">Share Sleep Duration & Quality</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_calories" id="gf_calories" {% if integrations.google_fit.allow_calories %}checked{% endif %}>
+                                <label class="form-check-label small" for="gf_calories">Share Calories Burned</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_exercise" id="gf_exercise" {% if integrations.google_fit.allow_exercise %}checked{% endif %}>
+                                <label class="form-check-label small" for="gf_exercise">Share Workout/Exercise Sessions</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_weight_bmi" id="gf_weight" {% if integrations.google_fit.allow_weight_bmi %}checked{% endif %}>
+                                <label class="form-check-label small" for="gf_weight">Share Weight & BMI</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_stress" id="gf_stress" {% if integrations.google_fit.allow_stress %}checked{% endif %}>
+                                <label class="form-check-label small" for="gf_stress">Share Stress & Mindfulness Metrics</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary mt-3" style="border-radius: 10px;">Update Permissions</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Fitbit Integration -->
+            <div class="glass-card mb-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div class="d-flex gap-3">
+                        <div class="p-3 bg-info-subtle text-info rounded-4 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-heart-pulse-fill fs-2"></i>
+                        </div>
+                        <div>
+                            <h4 class="h5 fw-bold mb-1">Fitbit Device</h4>
+                            <p class="text-secondary small mb-2">Sync comprehensive logs from Fitbit smartwatches and bands.</p>
+                            {% if integrations.fitbit.is_connected %}
+                                <span class="badge bg-success-subtle text-success px-3 py-1.5 rounded-pill small"><i class="bi bi-patch-check-fill"></i> Connected</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary px-3 py-1.5 rounded-pill small">Not Connected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        {% if integrations.fitbit.is_connected %}
+                            <form action="{% url 'delete_health_data' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 10px;">Disconnect</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'health_oauth_callback' %}?platform=fitbit" class="btn btn-sm btn-primary-custom">Connect Account</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if integrations.fitbit.is_connected %}
+                <hr class="my-4">
+                <h5 class="small fw-bold text-uppercase text-muted mb-3">Granular Permissions</h5>
+                <form action="{% url 'health_integrations' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="platform" value="fitbit">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_steps" id="fb_steps" {% if integrations.fitbit.allow_steps %}checked{% endif %}>
+                                <label class="form-check-label small" for="fb_steps">Share Steps & Active Minutes</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_heart_rate" id="fb_hr" {% if integrations.fitbit.allow_heart_rate %}checked{% endif %}>
+                                <label class="form-check-label small" for="fb_hr">Share Resting & Daily Heart Rate</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_sleep" id="fb_sleep" {% if integrations.fitbit.allow_sleep %}checked{% endif %}>
+                                <label class="form-check-label small" for="fb_sleep">Share Sleep Duration & Quality</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_calories" id="fb_calories" {% if integrations.fitbit.allow_calories %}checked{% endif %}>
+                                <label class="form-check-label small" for="fb_calories">Share Calories Burned</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_exercise" id="fb_exercise" {% if integrations.fitbit.allow_exercise %}checked{% endif %}>
+                                <label class="form-check-label small" for="fb_exercise">Share Workout/Exercise Sessions</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_weight_bmi" id="fb_weight" {% if integrations.fitbit.allow_weight_bmi %}checked{% endif %}>
+                                <label class="form-check-label small" for="fb_weight">Share Weight & BMI</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_stress" id="fb_stress" {% if integrations.fitbit.allow_stress %}checked{% endif %}>
+                                <label class="form-check-label small" for="fb_stress">Share Stress & Mindfulness Metrics</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary mt-3" style="border-radius: 10px;">Update Permissions</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Apple Health / Manual upload integration -->
+            <div class="glass-card mb-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div class="d-flex gap-3">
+                        <div class="p-3 bg-danger-subtle text-danger rounded-4 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-apple fs-2"></i>
+                        </div>
+                        <div>
+                            <h4 class="h5 fw-bold mb-1">Apple Health</h4>
+                            <p class="text-secondary small mb-2">Sync secure biometric metrics directly from Apple Devices.</p>
+                            {% if integrations.apple_health.is_connected %}
+                                <span class="badge bg-success-subtle text-success px-3 py-1.5 rounded-pill small"><i class="bi bi-patch-check-fill"></i> Connected</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary px-3 py-1.5 rounded-pill small">Not Connected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        {% if integrations.apple_health.is_connected %}
+                            <form action="{% url 'delete_health_data' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 10px;">Disconnect</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'health_oauth_callback' %}?platform=apple_health" class="btn btn-sm btn-primary-custom">Connect Account</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sandbox Simulation & Danger Zone -->
+        <div class="col-lg-4">
+            <!-- Sandbox Simulation Mode -->
+            <div class="glass-card mb-4 border-primary">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-bug-fill text-primary fs-4"></i>
+                    <h4 class="h5 fw-bold mb-0">Sandbox Sync Tool</h4>
+                </div>
+                <p class="text-secondary small">Since this is a development instance, use this tool to simulate device synchronization under different health profiles:</p>
+                
+                <form action="{% url 'sync_health' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select Platform</label>
+                        <select class="form-select" name="source">
+                            <option value="Google Fit">Google Fit</option>
+                            <option value="Fitbit">Fitbit</option>
+                            <option value="Apple Health" selected>Apple Health</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select Sandbox Profile</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="profile_type" id="profile_healthy" value="active_healthy" checked>
+                            <label class="form-check-label small" for="profile_healthy">
+                                <strong>Active & Healthy</strong><br>
+                                <span class="text-muted">10k+ steps, 8hrs sleep, 62bpm resting HR, low stress.</span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="profile_type" id="profile_stress" value="stress_burnout">
+                            <label class="form-check-label small" for="profile_stress">
+                                <strong>High Prep Stress / Fatigue</strong><br>
+                                <span class="text-muted">3k steps, 4.5hrs sleep, 82bpm resting HR, high stress score.</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="profile_type" id="profile_restless" value="sedentary_restless">
+                            <label class="form-check-label small" for="profile_restless">
+                                <strong>Sedentary / Restless</strong><br>
+                                <span class="text-muted">6k steps, 6.5hrs sleep, average HR, moderate stress.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                        <i class="bi bi-arrow-repeat"></i> Simulate Sync
+                    </button>
+                </form>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="glass-card mb-4" style="border-left: 5px solid var(--danger);">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-shield-lock-fill text-danger fs-4"></i>
+                    <h4 class="h5 fw-bold mb-0 text-danger">Privacy Danger Zone</h4>
+                </div>
+                <p class="text-secondary small">Instantly revoke all access tokens, disconnect connected platforms, and purge all your synchronized health biometric metrics from our records permanently.</p>
+                <form action="{% url 'delete_health_data' %}" method="post" onsubmit="return confirm('Are you sure you want to permanently delete all synced health metrics and disconnect all devices? This action is irreversible.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger w-100 py-2" style="border-radius: 12px;">
+                        <i class="bi bi-trash-fill"></i> Purge & Reset All Health Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
